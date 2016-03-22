@@ -13,12 +13,21 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.vk.sdk.VKAccessToken;
+import com.vk.sdk.VKScope;
+import com.vk.sdk.VKSdk;
+import com.vk.sdk.VKUIHelper;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    @Override
+
+     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+       // VKSdk.initialize(this.getApplicationContext());
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
