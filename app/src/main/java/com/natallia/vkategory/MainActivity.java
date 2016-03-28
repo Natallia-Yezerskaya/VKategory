@@ -1,25 +1,25 @@
 package com.natallia.vkategory;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.vk.sdk.VKAccessToken;
-import com.vk.sdk.VKScope;
-import com.vk.sdk.VKSdk;
-import com.vk.sdk.VKUIHelper;
+import com.natallia.vkategory.database.DBHelper;
+import com.natallia.vkategory.database.DataManager;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+
+    public DataManager dataManager;
+    private DBHelper dbHelper;
+    PostsFragment postsFragment;
 
 
      @Override
@@ -30,7 +30,21 @@ public class MainActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+         dbHelper = new DBHelper(this);
+        dataManager = new DataManager(this,dbHelper);
+         //dataManager.createPostsList();
+
+         getSupportFragmentManager()
+                 .beginTransaction()
+                 .replace(R.id.containerCategory, new CategoryFragment())
+                 .commitAllowingStateLoss();
+
+         refreshPostsFragment(0);
+
+        /*
+
+         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -49,6 +63,7 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        */
     }
 
     @Override
@@ -106,5 +121,22 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    public void refreshPostsFragment(int idCategory) {
+
+        Intent intent = new Intent();
+        intent.putExtra("idCategory", idCategory);
+        postsFragment = PostsFragment.createFragment(intent);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.containerPosts,postsFragment)
+                .commitAllowingStateLoss();
     }
 }

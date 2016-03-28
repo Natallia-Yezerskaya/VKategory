@@ -3,6 +3,8 @@ package com.natallia.vkategory;
 import android.content.Intent;
 import android.widget.Toast;
 
+import com.facebook.stetho.Stetho;
+import com.natallia.vkategory.database.HelperFactory;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKAccessTokenTracker;
 import com.vk.sdk.VKSdk;
@@ -26,8 +28,15 @@ public class Application extends android.app.Application{
     @Override
     public void onCreate() {
         super.onCreate();
+        HelperFactory.setHelper(getApplicationContext());
         vkAccessTokenTracker.startTracking();
         VKSdk.initialize(this);
+        Stetho.initializeWithDefaults(this);
     }
 
+    @Override
+    public void onTerminate() {
+        HelperFactory.releaseHelper();
+        super.onTerminate();
+    }
 }

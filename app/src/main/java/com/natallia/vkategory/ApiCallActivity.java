@@ -46,7 +46,7 @@ public class ApiCallActivity extends ActionBarActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment(), FRAGMENT_TAG)
+                    .add(R.id.containerCategory, new PlaceholderFragment(), FRAGMENT_TAG)
                     .commit();
             processRequestIfRequired();
         }

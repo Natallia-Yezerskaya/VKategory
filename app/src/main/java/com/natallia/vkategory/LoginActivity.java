@@ -39,7 +39,7 @@ public class LoginActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_first);
         String[] fingerprints = VKUtil.getCertificateFingerprint(this, this.getPackageName());
         Log.d("MYTAG",fingerprints.toString());
         VKSdk.wakeUpSession(this, new VKCallback<VKSdk.LoginState>() {
@@ -114,7 +114,8 @@ public class LoginActivity extends FragmentActivity {
             @Override
             public void onResult(VKAccessToken res) {
                 // User passed Authorization
-                startTestActivity();
+               // startTestActivity();
+                startMainActivity();
             }
 
             @Override
@@ -128,9 +129,14 @@ public class LoginActivity extends FragmentActivity {
         }
     }
 
-    private void startTestActivity() {
+    private void startTestActivity() {//TODO потом убрать
         startActivity(new Intent(this, TestActivity.class));
     }
+
+    private void startMainActivity() {
+        startActivity(new Intent(this, MainActivity.class));
+    }
+
 
     public static class LoginFragment extends android.support.v4.app.Fragment {
         public LoginFragment() {
@@ -162,7 +168,8 @@ public class LoginActivity extends FragmentActivity {
             v.findViewById(R.id.continue_button).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ((LoginActivity) getActivity()).startTestActivity();
+                    //((LoginActivity) getActivity()).startTestActivity();
+                    ((LoginActivity) getActivity()).startMainActivity();
                 }
             });
 

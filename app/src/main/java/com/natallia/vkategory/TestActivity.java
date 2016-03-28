@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -20,23 +21,14 @@ import android.view.ViewGroup;
 import com.vk.sdk.VKSdk;
 import com.vk.sdk.api.VKApi;
 import com.vk.sdk.api.VKApiConst;
-import com.vk.sdk.api.VKBatchRequest;
-import com.vk.sdk.api.VKBatchRequest.VKBatchRequestListener;
 import com.vk.sdk.api.VKError;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKRequest.VKRequestListener;
 import com.vk.sdk.api.VKResponse;
-import com.vk.sdk.api.methods.VKApiCaptcha;
-import com.vk.sdk.api.model.VKApiPhoto;
 import com.vk.sdk.api.model.VKApiUser;
 import com.vk.sdk.api.model.VKAttachments;
-import com.vk.sdk.api.model.VKPhotoArray;
 import com.vk.sdk.api.model.VKWallPostResult;
-import com.vk.sdk.api.photo.VKImageParameters;
-import com.vk.sdk.api.photo.VKUploadImage;
-import com.vk.sdk.dialogs.VKShareDialog;
-import com.vk.sdk.dialogs.VKShareDialogBuilder;
 import com.vk.sdk.payments.VKPaymentsCallback;
 
 import org.json.JSONArray;
@@ -49,13 +41,13 @@ import java.io.OutputStream;
 
 public class TestActivity extends ActionBarActivity {
 
-    private static final int[] IDS = {R.id.users_get, R.id.friends_get, R.id.messages_get, R.id.dialogs_get,
-            R.id.captcha_force, R.id.upload_photo, R.id.wall_post, R.id.wall_getById, R.id.test_validation,
-            R.id.test_share, R.id.upload_photo_to_wall, R.id.upload_doc, R.id.upload_several_photos_to_wall,
-            R.id.test_send_request};
+    private static final int[] IDS = {R.id.users_get, R.id.friends_get, };
 
     public static final int TARGET_GROUP = 60479154;
     public static final int TARGET_ALBUM = 181808365;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +68,7 @@ public class TestActivity extends ActionBarActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().add(R.id.container, new PlaceholderFragment()).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.containerCategory, new PlaceholderFragment()).commit();
         }
     }
 
@@ -105,10 +97,6 @@ public class TestActivity extends ActionBarActivity {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.test_send_request: {
-                    makeRequest();
-                }
-                break;
                 case R.id.users_get:
                     VKRequest request = new VKRequest("fave.getPosts");
                     VKParameters p;
@@ -128,130 +116,25 @@ public class TestActivity extends ActionBarActivity {
                 */
                 break;
                 case R.id.friends_get:
-                    startApiCall(VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,sex,bdate,city")));
-                    break;
-                case R.id.messages_get:
-                    startApiCall(VKApi.messages().get());
-                    break;
-                case R.id.dialogs_get:
-                    startApiCall(VKApi.messages().getDialogs());
-                    break;
-                case R.id.captcha_force:
-                    startApiCall(new VKApiCaptcha().force());
-                    break;
-                case R.id.upload_photo: {
-                    final Bitmap photo = getPhoto();
-                    request = VKApi.uploadAlbumPhotoRequest(new VKUploadImage(photo, VKImageParameters.pngImage()), TARGET_ALBUM, TARGET_GROUP);
-                    request.executeWithListener(new VKRequestListener() {
-                        @Override
-                        public void onComplete(VKResponse response) {
-                            recycleBitmap(photo);
-                            VKPhotoArray photoArray = (VKPhotoArray) response.parsedModel;
-                            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(String.format("https://vk.com/photo-%d_%s", TARGET_GROUP, photoArray.get(0).id)));
-                            startActivity(i);
-                        }
 
-                        @Override
-                        public void onError(VKError error) {
-                            showError(error);
-                        }
-                    });
-                }
-                break;
-                case R.id.wall_post:
-                    makePost(null, "Hello, friends!");
+
+
+                    //TODO здесь активити для создания папок категорий
+                   startCategory();
+
+                    //startApiCall(VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,sex,bdate,city")));
                     break;
-                case R.id.wall_getById:
-                    startApiCall(VKApi.wall().getById(VKParameters.from(VKApiConst.POSTS, "1_45558")));
-                    break;
-                case R.id.test_validation:
-                    startApiCall(new VKRequest("account.testValidation"));
-                    break;
-                case R.id.test_share: {
-                    final Bitmap b = getPhoto();
-                    VKPhotoArray photos = new VKPhotoArray();
-                    photos.add(new VKApiPhoto("photo-47200925_314622346"));
-                    new VKShareDialogBuilder()
-                            .setText("I created this post with VK Android SDK\nSee additional information below\n#vksdk")
-                            .setUploadedPhotos(photos)
-                            .setAttachmentImages(new VKUploadImage[]{
-                                    new VKUploadImage(b, VKImageParameters.pngImage())
-                            })
-                            .setAttachmentLink("VK Android SDK information", "https://vk.com/dev/android_sdk")
-                            .setShareDialogListener(new VKShareDialog.VKShareDialogListener() {
-                                @Override
-                                public void onVkShareComplete(int postId) {
-                                    recycleBitmap(b);
-                                }
-
-                                @Override
-                                public void onVkShareCancel() {
-                                    recycleBitmap(b);
-                                }
-
-                                @Override
-                                public void onVkShareError(VKError error) {
-                                    recycleBitmap(b);
-                                }
-                            })
-                            .show(getFragmentManager(), "VK_SHARE_DIALOG");
-                }
-                break;
-                case R.id.upload_photo_to_wall: {
-                    final Bitmap photo = getPhoto();
-                    request = VKApi.uploadWallPhotoRequest(new VKUploadImage(photo, VKImageParameters.jpgImage(0.9f)), 0, TARGET_GROUP);
-                    request.executeWithListener(new VKRequestListener() {
-                        @Override
-                        public void onComplete(VKResponse response) {
-                            recycleBitmap(photo);
-                            VKApiPhoto photoModel = ((VKPhotoArray) response.parsedModel).get(0);
-                            makePost(new VKAttachments(photoModel));
-                        }
-
-                        @Override
-                        public void onError(VKError error) {
-                            showError(error);
-                        }
-                    });
-                }
-                break;
-                case R.id.upload_doc:
-                    startApiCall(VKApi.docs().uploadDocRequest(getFile()));
-                    break;
-                case R.id.upload_several_photos_to_wall: {
-                    final Bitmap photo = getPhoto();
-                    VKRequest request1 = VKApi.uploadWallPhotoRequest(new VKUploadImage(photo, VKImageParameters.jpgImage(0.9f)), 0, TARGET_GROUP);
-                    VKRequest request2 = VKApi.uploadWallPhotoRequest(new VKUploadImage(photo, VKImageParameters.jpgImage(0.5f)), 0, TARGET_GROUP);
-                    VKRequest request3 = VKApi.uploadWallPhotoRequest(new VKUploadImage(photo, VKImageParameters.jpgImage(0.1f)), 0, TARGET_GROUP);
-                    VKRequest request4 = VKApi.uploadWallPhotoRequest(new VKUploadImage(photo, VKImageParameters.pngImage()), 0, TARGET_GROUP);
-
-                    VKBatchRequest batch = new VKBatchRequest(request1, request2, request3, request4);
-                    batch.executeWithListener(new VKBatchRequestListener() {
-                        @Override
-                        public void onComplete(VKResponse[] responses) {
-                            super.onComplete(responses);
-                            recycleBitmap(photo);
-                            VKAttachments attachments = new VKAttachments();
-                            for (VKResponse response : responses) {
-                                VKApiPhoto photoModel = ((VKPhotoArray) response.parsedModel).get(0);
-                                attachments.add(photoModel);
-                            }
-                            makePost(attachments);
-                        }
-
-                        @Override
-                        public void onError(VKError error) {
-                            showError(error);
-                        }
-                    });
-                }
-                break;
             }
         }
 
         private void startApiCall(VKRequest request) {
             Intent i = new Intent(getActivity(), ApiCallActivity.class);
             i.putExtra("request", request.registerObject());
+            startActivity(i);
+        }
+
+        private void startCategory() {
+            Intent i = new Intent(getActivity(), CategoryActivity.class);
             startActivity(i);
         }
 
@@ -279,6 +162,8 @@ public class TestActivity extends ActionBarActivity {
                 bitmap.recycle();
             }
         }
+
+
 
         private File getFile() {
             try {

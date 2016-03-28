@@ -31,6 +31,7 @@
 
         <activity android:name=".TestActivity" />
         <activity android:name=".ApiCallActivity" />
+        <activity android:name=".MainActivity" />
     </application>
 
 </manifest>
