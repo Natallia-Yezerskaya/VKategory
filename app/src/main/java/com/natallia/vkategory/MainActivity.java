@@ -3,6 +3,7 @@ package com.natallia.vkategory;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -10,13 +11,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 import com.natallia.vkategory.database.DBHelper;
 import com.natallia.vkategory.database.DataManager;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, CategoryFragmentEventHandler {
 
-
+    private static String POST_FRAGMENT_INSTANCE_NAME = "fragmentPost";
+    PostsFragment fragmentPost = null;
     public DataManager dataManager;
     private DBHelper dbHelper;
     PostsFragment postsFragment;
@@ -32,15 +35,24 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
          dbHelper = new DBHelper(this);
-        dataManager = new DataManager(this,dbHelper);
+         dataManager = new DataManager(this,dbHelper);
          //dataManager.createPostsList();
 
+         CategoryFragment categoryFragment = new CategoryFragment();
+         categoryFragment.setCategoryFragmentEventHandler(this);
          getSupportFragmentManager()
                  .beginTransaction()
-                 .replace(R.id.containerCategory, new CategoryFragment())
+                 .replace(R.id.containerCategory, categoryFragment)
                  .commitAllowingStateLoss();
+// Восстанавливаем уже созданный фрагмент
+         FragmentManager fm = getSupportFragmentManager();
+         fragmentPost = (PostsFragment) fm.findFragmentByTag(POST_FRAGMENT_INSTANCE_NAME);
+         // Если фрагмент не сохранен, создаем новый экземпляр
+         if(fragmentPost == null){
+            refreshPostsFragment(0);
+         }
 
-         refreshPostsFragment(0);
+         //refreshPostsFragment(0);
 
         /*
 
@@ -136,7 +148,25 @@ public class MainActivity extends AppCompatActivity
         postsFragment = PostsFragment.createFragment(intent);
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.containerPosts,postsFragment)
+                .replace(R.id.containerPosts,postsFragment,POST_FRAGMENT_INSTANCE_NAME)
                 .commitAllowingStateLoss();
+    }
+
+    @Override
+    public void OnPostCategoryChange(int postId, int categoryId) {
+        DataManager.getInstance().replacePostsIntoCategory(postId, categoryId);
+        //getSupportFragmentManager().getFragments().
+        postsFragment.removePostFromView(postId);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
     }
 }
