@@ -29,5 +29,6 @@
     <string name="logout">Logout</string>
 
     <string name="send_request_title">Choose friend</string>
+    <string name="loading">Loading</string>
 
 </resources>

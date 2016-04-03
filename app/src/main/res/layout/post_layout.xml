@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/layoutCategory"
+    android:layout_marginBottom="2dp"
+    android:layout_marginTop="2dp"
+    android:background="#dcc5fa"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvPost"
+        android:text="hjdfhks"
+        android:textColor="#000000"/>
+
+    <GridView
+        android:id="@+id/gvMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+
+       >
+    </GridView>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ivPhoto"/>
+
+</LinearLayout>
