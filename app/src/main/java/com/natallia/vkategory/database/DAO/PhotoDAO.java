@@ -8,9 +8,6 @@ import com.natallia.vkategory.models.Post;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Created by Natallia on 23.03.2016.
- */
 public class PhotoDAO extends BaseDaoImpl<Photo, Integer>{
 
     public PhotoDAO(ConnectionSource connectionSource,

@@ -5,13 +5,15 @@
     android:layout_height="match_parent"
 
     tools:context=".ApiCallActivity$PlaceholderFragment"
-    android:fillViewport="false">
+    android:fillViewport="false"
+    android:background="#b9f3e3">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvPosts"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#e2c9c9">
+
+        android:elevation="10dp">
     </android.support.v7.widget.RecyclerView>
 
 </LinearLayout>

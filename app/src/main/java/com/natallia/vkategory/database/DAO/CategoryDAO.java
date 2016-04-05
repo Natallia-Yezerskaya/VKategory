@@ -7,9 +7,6 @@ import com.natallia.vkategory.models.Category;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Created by Natallia on 23.03.2016.
- */
 public class CategoryDAO extends BaseDaoImpl<Category, Integer>{
 
     public CategoryDAO(ConnectionSource connectionSource,

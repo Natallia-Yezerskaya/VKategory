@@ -1,35 +1,34 @@
 package com.natallia.vkategory.adapters;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.Intent;
 import android.graphics.Rect;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.natallia.vkategory.MainActivity;
 import com.natallia.vkategory.R;
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
-import com.natallia.vkategory.database.DataManager;
 import com.natallia.vkategory.models.Category;
 
 import java.util.List;
 
-/**
- * Created by Natallia on 23.03.2016.
- */
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryHolder>{
 
     private List<Category> categories;
     private Activity activity;
     private CategoryFragmentEventHandler mCategoryFragmentEventHandler;
+    private boolean forChoosing;
+    private ViewGroup.LayoutParams lParams1;
+    private int oldWidth;
 
     public CategoryFragmentEventHandler getCategoryFragmentEventHandler() {
         return mCategoryFragmentEventHandler;
@@ -77,17 +76,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                     Rect r = new Rect();
                     for (int i = 0; i < holder.frameLayout.getChildCount(); i++) {
                         holder.frameLayout.getChildAt(i).getHitRect(r);
-                        //holder.frameLayout.getChildAt(i).getGlobalV)
                         if (r.contains((int) x, (int) y)) {
                             Log.d("motion_drop", String.valueOf(i));
-
-                            if (mCategoryFragmentEventHandler!=null) {
-                                mCategoryFragmentEventHandler.OnPostCategoryChange(event.getClipData().getItemAt(0).getIntent().getIntExtra("id_post", 0),categories.get(position).getId());
+                            if (mCategoryFragmentEventHandler != null) {
+                                int id_post = event.getClipData().getItemAt(0).getIntent().getIntExtra("id_post", 0);
+                                mCategoryFragmentEventHandler.OnPostCategoryChange(id_post, categories.get(position).getId());
                             }
-
-                            //DataManager.getInstance().replacePostsIntoCategory(event.getClipData().getItemAt(0).getIntent().getIntExtra("id_post", 0),categories.get(position).getId());
-                            //event.getClipData().getItemAt(0).getIntent().getIntExtra("id_post", 0)
-
                         }
                     }
                 }
@@ -99,53 +93,54 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                     Rect r = new Rect();
                     for (int i = 0; i < holder.frameLayout.getChildCount(); i++) {
                         holder.frameLayout.getChildAt(i).getHitRect(r);
-                        //holder.frameLayout.getChildAt(i).getGlobalV)
                         if (r.contains((int) x, (int) y)) {
                             Log.d("motion_entered", String.valueOf(i));
                         }
                     }
                 }
+
                 return true;
             }
         });
-        /*holder.frameLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
+        oldWidth = holder.frameLayout.getWidth();
+        if (forChoosing) {
+            ValueAnimator valueAnimator = ValueAnimator.ofFloat(0f, 64f);
+            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    holder.frameLayout.setCardElevation((Float) animation.getAnimatedValue());
+                    lParams1 =  holder.frameLayout.getLayoutParams();
 
-                float x;
-                float y;
-                String sDown = "";
-                String sMove = "";
-                String sUp = "";
-                x = event.getX();
-                y = event.getY();
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN: // нажатие
-                        sDown = "Down: " + x + "," + y;
-                        sMove = "";
-                        sUp = "";
-                        break;
-                    case MotionEvent.ACTION_MOVE: // движение
-                        sMove = "Move: " + x + "," + y;
-                        break;
-                    case MotionEvent.ACTION_UP: // отпускание
-                        Log.d("motion", "отпустила");
-                        break;
-                    case MotionEvent.ACTION_CANCEL:
-                        sMove = "";
-                        sUp = "Up: " + x + "," + y;
-                        break;
+                    lParams1.width = lParams1.width+20;
                 }
-                Log.d("motion", "" + sDown + "\n" + sMove + "\n" + sUp);
-                return true;
-            }
-        });*/
+
+
+            });
+            valueAnimator.setDuration(100);
+            valueAnimator.start();
+
+            //holder.frameLayout.setMinimumWidth(holder.frameLayout.getWidth()+15);
+
+            //holder.frameLayout.setCardElevation(20f);
+        }
+        else {
+            holder.frameLayout.setCardElevation(4f);
+           // lParams1.width = oldWidth;
+        }
+
+
     }
 
     public void addCategory(Category category){
         categories.add(category);
     }
+
+    public void categoryForChoosing(boolean forChoose){
+        forChoosing = forChoose;
+
+        notifyDataSetChanged();
+    }
+
 
 
     @Override
@@ -155,15 +150,14 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     public class CategoryHolder extends RecyclerView.ViewHolder {
         TextView categoryName;
-        FrameLayout frameLayout;
-
+        CardView frameLayout;
 
         public CategoryHolder(View itemView) {
             super(itemView);
             categoryName = (TextView) itemView.findViewById(R.id.tvCategory);
-            frameLayout = (FrameLayout)itemView.findViewById(R.id.layoutCategory);
+            frameLayout = (CardView)itemView.findViewById(R.id.layoutCategory);
+            frameLayout.setMaxCardElevation(30f);
             }
         }
-
     }
 

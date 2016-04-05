@@ -10,6 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 import com.natallia.vkategory.database.DBHelper;
@@ -24,6 +26,8 @@ public class MainActivity extends AppCompatActivity
     CategoryFragment fragmentCategory = null;
     public DataManager dataManager;
     private DBHelper dbHelper;
+    private LinearLayout.LayoutParams lParams1;
+    private LinearLayout.LayoutParams lParams2;
    // PostsFragment postsFragment;
 
 
@@ -39,21 +43,17 @@ public class MainActivity extends AppCompatActivity
          //dataManager.createPostsList(0);
 
          FragmentManager fm = getSupportFragmentManager();
-
+         fragmentCategory = (CategoryFragment) fm.findFragmentByTag(CATEGORY_FRAGMENT_INSTANCE_NAME);
          if(fragmentCategory == null){
-             CategoryFragment categoryFragment = new CategoryFragment();
-             categoryFragment.setCategoryFragmentEventHandler(this);
+             fragmentCategory = new CategoryFragment();
+             fragmentCategory.setCategoryFragmentEventHandler(this);
              getSupportFragmentManager()
                      .beginTransaction()
-                     .replace(R.id.containerCategory, categoryFragment)
+                     .replace(R.id.containerCategory, fragmentCategory)
                      .commitAllowingStateLoss();
          }
 
-
-// Восстанавливаем уже созданный фрагмент
-
          fragmentPost = (PostsFragment) fm.findFragmentByTag(POST_FRAGMENT_INSTANCE_NAME);
-         // Если фрагмент не сохранен, создаем новый экземпляр
          if(fragmentPost == null){
             refreshPostsFragment(0);
          }
@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
+
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -161,8 +161,33 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void OnPostCategoryChange(int postId, int categoryId) {
         DataManager.getInstance().replacePostsIntoCategory(postId, categoryId);
-        //getSupportFragmentManager().getFragments().
         fragmentPost.removePostFromView(postId);
+    }
+
+
+    public void CategoryForChoosing(boolean forChoosing) {
+
+        fragmentCategory.CategoryForChoosing(forChoosing);
+
+        FrameLayout layoutCategory = (FrameLayout) findViewById(R.id.containerCategory);
+        FrameLayout layoutPosts = (FrameLayout) findViewById(R.id.containerPosts);
+        lParams1 = (LinearLayout.LayoutParams) layoutCategory.getLayoutParams();
+        lParams2 = (LinearLayout.LayoutParams) layoutPosts.getLayoutParams();
+
+        if (forChoosing){
+            lParams1.width =  lParams1.width+30;
+            lParams2.rightMargin = lParams2.rightMargin-30;
+        }
+       else{
+            lParams1.weight = 2;
+            lParams2.weight = 8;
+        }
+
+
+
+        //int oldWidth = layout.getWidth();
+        //layout.setMinimumWidth(oldWidth+10);
+
     }
 
     @Override
@@ -173,6 +198,5 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
     }
 }

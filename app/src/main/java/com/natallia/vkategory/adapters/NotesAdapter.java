@@ -1,17 +1,26 @@
 package com.natallia.vkategory.adapters;
 
+import android.animation.Animator;
+import android.animation.FloatEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Rect;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.widget.AbsListView;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -19,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.natallia.vkategory.MainActivity;
 import com.natallia.vkategory.R;
 import com.natallia.vkategory.UI.OnLoadMoreListener;
 import com.natallia.vkategory.models.Note;
@@ -149,13 +159,17 @@ public class NotesAdapter extends RecyclerView.Adapter{
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
 
         if (holder instanceof NotesHolder) {
 
-            NotesHolder notesHolder = (NotesHolder) holder;
+            final NotesHolder notesHolder = (NotesHolder) holder;
 
             notesHolder.noteText.setText(notes.get(position).getText());
+            notesHolder.linearLayout.setMaxCardElevation(64f);
+            notesHolder.linearLayout.setCardElevation(4f);
+
+            //((NotesHolder) holder).linearLayout.setShadowPadding(5,5,5,5);
 
             //if (!(notes.get(position).getPhotos().size() == 0)) {
 
@@ -169,31 +183,112 @@ public class NotesAdapter extends RecyclerView.Adapter{
                 }
 
                 notesHolder.gridView.setNumColumns(GridView.AUTO_FIT);
-                ImageAdapter mAdapter = new ImageAdapter(context, photos, position);
+                final ImageAdapter mAdapter = new ImageAdapter(context, photos, position);
                 notesHolder.gridView.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();
 
             //}
 
-            ((NotesHolder) holder).linearLayout.setOnLongClickListener(new View.OnLongClickListener() {
+            notesHolder.linearLayout.setOnLongClickListener(new View.OnLongClickListener() {
 
                 @Override
-                public boolean onLongClick(View v) {
-
+                public boolean onLongClick(final View v) {
+                    ((MainActivity)activity).CategoryForChoosing(true);
+                    //ValueAnimator valueAnimator = ValueAnimator.ofFloat()
+                    //ViewPropertyAnimator viewPropertyAnimator = new ViewPropertyAnimator();
                     Log.d("motion", "ONTOUCH");
                     Intent intent = new Intent();
                     intent.putExtra("id_post", notes.get(position).getId());
-                    ClipData clipData = ClipData.newIntent("id", intent);
-                    View.DragShadowBuilder dragShadowBuilder = getTextThumbnailBuilder(v.getContext(), "HELLO");
+                    final ClipData clipData = ClipData.newIntent("id", intent);
 
-                    v.startDrag(clipData, dragShadowBuilder, v, 0);
-                    //v.setVisibility(View.GONE);
+
+
+
+                   final CardView cardView = (CardView) v;
+                    //cardView.setCardElevation(16f);
+                    //ObjectAnimator objectAnimator = ObjectAnimator.ofArgb(cardView, "background", Color.BLACK);
+                    //objectAnimator.start();
+                    ValueAnimator valueAnimator = ValueAnimator.ofFloat(0f, 64f);
+                    valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            cardView.setCardElevation((Float) animation.getAnimatedValue());
+                        }
+
+
+                    });
+                    valueAnimator.setDuration(100);
+                    valueAnimator.start();
+                    valueAnimator.addListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            final View.DragShadowBuilder dragShadowBuilder = new View.DragShadowBuilder(v);
+                            //View.DragShadowBuilder dragShadowBuilder = getTextThumbnailBuilder(v.getContext(), "HELLO");
+                            //dragShadowBuilder
+                            v.startDrag(clipData, dragShadowBuilder, v, 0);
+                            ((CardView) v).setCardElevation(4f);
+                            v.setVisibility(View.INVISIBLE);
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animator animation) {
+
+                        }
+                    });
+
+//                    final View.DragShadowBuilder dragShadowBuilder = new View.DragShadowBuilder(v);
+//                    //View.DragShadowBuilder dragShadowBuilder = getTextThumbnailBuilder(v.getContext(), "HELLO");
+//
+//                    v.startDrag(clipData, dragShadowBuilder, v, 0);
+//                    //v.setVisibility(View.INVISIBLE);
                     return true;
                 }
             });
+
+            notesHolder.linearLayout.setOnDragListener(new View.OnDragListener() {
+                @Override
+                public boolean onDrag(View v, DragEvent event) {
+                    final View dragView=(View) event.getLocalState();
+                    if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+                        Log.d("motion_ended", event.toString());
+                        if(dropEventNotHandled(event)){
+                            dragView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dragView.setVisibility(View.VISIBLE);
+                                    ((MainActivity)activity).CategoryForChoosing(false);
+                                }
+                            });
+                        }
+//                        v.setVisibility(View.VISIBLE);
+//                        event.
+
+                    }
+                    return false;
+                }
+
+                private boolean dropEventNotHandled (DragEvent event){
+                    return !event.getResult();
+                }
+
+            });
+
         } else {
             ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
         }
+
+
+
     }
 
 
@@ -204,16 +299,14 @@ public class NotesAdapter extends RecyclerView.Adapter{
 
     public class NotesHolder extends RecyclerView.ViewHolder {
         TextView noteText;
-        LinearLayout linearLayout;
-        ImageView imageView;
+        CardView linearLayout;
         GridView gridView;
 
 
         public NotesHolder(View itemView) {
             super(itemView);
             noteText = (TextView) itemView.findViewById(R.id.tvPost);
-            linearLayout = (LinearLayout)itemView.findViewById(R.id.layoutCategory);
-            imageView = (ImageView)itemView.findViewById(R.id.ivPhoto);
+            linearLayout = (CardView)itemView.findViewById(R.id.layoutPost);
             gridView = (GridView)itemView.findViewById(R.id.gvMain);
 
             }
