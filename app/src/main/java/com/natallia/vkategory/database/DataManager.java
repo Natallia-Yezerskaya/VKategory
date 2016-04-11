@@ -210,11 +210,14 @@ public class DataManager  {
 
 
 
-    public void replacePostsIntoCategory(int idNote,int idCategory){
+    public boolean replacePostsIntoCategory(int idNote,int idCategory){
         try {
             List<Note>  noteList = notesDAO.queryBuilder().where().eq(Note.FIELD_ID, idNote).query();
             List<Category>  categoryList = categoryDAO.queryBuilder().where().eq(Category.FIELD_ID, idCategory).query();
             int oldCategoryId = noteList.get(0).getCategory().getId();
+            if (oldCategoryId == idCategory) {
+                return false;
+            }
             Note note = noteList.get(0);
             note.setCategory(categoryList.get(0));
             notesDAO.update(note);
@@ -222,5 +225,6 @@ public class DataManager  {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return true;
     }
 }

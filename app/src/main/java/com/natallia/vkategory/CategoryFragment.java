@@ -2,8 +2,11 @@ package com.natallia.vkategory;
 
 import android.app.DialogFragment;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,6 +20,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
+
 import com.natallia.vkategory.adapters.CategoryAdapter;
 import com.natallia.vkategory.database.DataManager;
 import com.natallia.vkategory.models.Category;
@@ -31,12 +35,22 @@ public class CategoryFragment  extends Fragment {
     static final int PICK_CONTACT_REQUEST = 1;
 
 
-    private Button btnCreate;
+
+    private FloatingActionButton btnCreate;
    // private ListView listView;
     private RecyclerView mRecyclerView;
     private CategoryAdapter mAdapter;
     //private FrameLayout mCardView;
     private CategoryFragmentEventHandler mCategoryFragmentEventHandler;
+    private int idSelectedCategory;
+
+    public int getIdSelectedCategory() {
+        return idSelectedCategory;
+    }
+
+    public void setIdSelectedCategory(int idSelectedCategory) {
+        this.idSelectedCategory = idSelectedCategory;
+    }
 
     public CategoryFragmentEventHandler getCategoryFragmentEventHandler() {
         return mCategoryFragmentEventHandler;
@@ -61,8 +75,16 @@ public class CategoryFragment  extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_category, container, false);
 
+        if (savedInstanceState != null) {
+            idSelectedCategory = savedInstanceState.getInt("idSelectedCategory", 0);
+        }
 
-        btnCreate = (Button) view.findViewById(R.id.createCategory);
+
+
+        btnCreate = (FloatingActionButton) view.findViewById(R.id.fab);
+        btnCreate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent2)));
+
+        //btnCreate.setBackground();
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rvCategory);
        // mCardView = (FrameLayout) view.findViewById(R.id.frame_layout);
        // mCardView.setMaxCardElevation(32f);
@@ -91,9 +113,10 @@ public class CategoryFragment  extends Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         List<Category> values = DataManager.getInstance().getCategoriesList();
         mAdapter = new CategoryAdapter(values,getActivity());
+        mAdapter.setIdSelectedCategory(idSelectedCategory);
         mAdapter.setCategoryFragmentEventHandler(mCategoryFragmentEventHandler);
         mRecyclerView.setAdapter(mAdapter);
-        mAdapter.notifyDataSetChanged();
+       mAdapter.notifyDataSetChanged();
 
         return view;
     }
@@ -167,5 +190,12 @@ public class CategoryFragment  extends Fragment {
 //    else {
 //            valueAnimator.reverse();
 //    }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        idSelectedCategory = mAdapter.getIdSelectedCategory();
+        outState.putInt("idSelectedCategory", idSelectedCategory);
     }
 }

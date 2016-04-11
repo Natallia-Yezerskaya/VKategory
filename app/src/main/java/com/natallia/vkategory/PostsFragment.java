@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +65,7 @@ public class PostsFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater,
+    public View onCreateView(final LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
@@ -109,8 +110,35 @@ public class PostsFragment extends Fragment {
             }
         });
 
+        mRecyclerView.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View v, DragEvent event) {
+                final View dragView=(View) event.getLocalState();
+                Log.d("motion_ended_fragment", event.toString());
+                if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+                    Log.d("motion_ended_fragment", event.toString());
+                    if(dropEventNotHandled(event)){
+                        dragView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                dragView.setVisibility(View.VISIBLE);
+                                ((MainActivity)getActivity()).CategoryForChoosing(false);
+                            }
+                        });
+                    }
+                } else if (event.getAction() == DragEvent.ACTION_DROP) {
+                    return false;
+                }
+
+                return true;
+            }
+            private boolean dropEventNotHandled(DragEvent event) {
+                return !event.getResult();
+            }
+        });
 
         mAdapter.notifyDataSetChanged();
+
 
         return view;
     }

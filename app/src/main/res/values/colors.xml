@@ -3,6 +3,40 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent2">#9E9E9E</color>
+    <color name="colorAccent3">#1053ef</color>
+
     <color name="cardview_shadow_start_color">#80000000</color>
     <color name="cardview_shadow_end_color">#00000000</color>
+    <color name="colortemp1">#40a6ff</color>
+    <color name="mainBackground">#d6cdd0</color>
+    <color name="colortemp2">#FF4081</color>
+
+
+    <array name="colorPalette">
+        <item>#F44336</item>
+        <item>#3F51B5</item>
+        <item>#4CAF50</item>
+        <item>#FF9800</item>
+        <item>#E91E63</item>
+        <item>#2196F3</item>
+        <item>#8BC34A</item>
+        <item>#FF5722</item>
+        <item>#03A9F4</item>
+        <item>#CDDC39</item>
+        <item>#795548</item>
+        <item>#E040FB</item>
+        <item>#00BCD4</item>
+        <item>#FFEB3B</item>
+        <item>#9E9E9E</item>
+        <item>#7C4DFF</item>
+        <item>#009688</item>
+        <item>#FFC107</item>
+        <item>#607D8B</item>
+        <item>#673AB7</item>
+
+    </array>
+
+
+
 </resources>

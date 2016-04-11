@@ -17,8 +17,11 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
+import com.natallia.vkategory.UI.MyColor;
 import com.natallia.vkategory.database.DBHelper;
 import com.natallia.vkategory.database.DataManager;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, CategoryFragmentEventHandler {
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
      @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +48,8 @@ public class MainActivity extends AppCompatActivity
 
          dbHelper = new DBHelper(this);
          dataManager = new DataManager(this,dbHelper);
+         MyColor.initialize(this);
+
 
          FragmentManager fm = getSupportFragmentManager();
          fragmentCategory = (CategoryFragment) fm.findFragmentByTag(CATEGORY_FRAGMENT_INSTANCE_NAME);
@@ -52,7 +58,7 @@ public class MainActivity extends AppCompatActivity
              fragmentCategory.setCategoryFragmentEventHandler(this);
              getSupportFragmentManager()
                      .beginTransaction()
-                     .replace(R.id.containerCategory, fragmentCategory)
+                     .replace(R.id.containerCategory, fragmentCategory,CATEGORY_FRAGMENT_INSTANCE_NAME)
                      .commitAllowingStateLoss();
          }
 
@@ -168,10 +174,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void OnPostCategoryChange(int postId, int categoryId) {
+    public boolean OnPostCategoryChange(int postId, int categoryId) {
 
-        DataManager.getInstance().replacePostsIntoCategory(postId, categoryId);
-        fragmentPost.removePostFromView(postId);
+        boolean replaced  = DataManager.getInstance().replacePostsIntoCategory(postId, categoryId);
+        if (replaced) {
+            fragmentPost.removePostFromView(postId);
+            return true;
+        }
+        return false;
     }
 
 

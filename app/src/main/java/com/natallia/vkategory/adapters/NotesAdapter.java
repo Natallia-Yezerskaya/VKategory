@@ -171,7 +171,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
             notesHolder.linearLayout.setVisibility(View.VISIBLE);
 
             notesHolder.noteText.setText(notes.get(position).getText());
-            notesHolder.linearLayout.setMaxCardElevation(64f);
+            notesHolder.linearLayout.setMaxCardElevation(20f);
             notesHolder.linearLayout.setCardElevation(4f);
 
             //((NotesHolder) holder).linearLayout.setShadowPadding(5,5,5,5);
@@ -198,7 +198,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
 
                 @Override
                 public boolean onLongClick(final View v) {
-                    ((MainActivity)activity).CategoryForChoosing(true);
+                    ((MainActivity) activity).CategoryForChoosing(true);
                     //ValueAnimator valueAnimator = ValueAnimator.ofFloat()
                     //ViewPropertyAnimator viewPropertyAnimator = new ViewPropertyAnimator();
                     Log.d("motion", "ONTOUCH");
@@ -207,9 +207,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
                     final ClipData clipData = ClipData.newIntent("id", intent);
 
 
-
-
-                   final CardView cardView = (CardView) v;
+                    final CardView cardView = (CardView) v;
                     //cardView.setCardElevation(16f);
                     //ObjectAnimator objectAnimator = ObjectAnimator.ofArgb(cardView, "background", Color.BLACK);
                     //objectAnimator.start();
@@ -261,33 +259,35 @@ public class NotesAdapter extends RecyclerView.Adapter{
                 }
             });
 
-            notesHolder.linearLayout.setOnDragListener(new View.OnDragListener() {
-                @Override
-                public boolean onDrag(View v, DragEvent event) {
-                    final View dragView=(View) event.getLocalState();
-                    if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
-                        Log.d("motion_ended", event.toString());
-                        if(dropEventNotHandled(event)){
-                            dragView.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dragView.setVisibility(View.VISIBLE);
-                                    ((MainActivity)activity).CategoryForChoosing(false);
-                                }
-                            });
-                        }
-//                        v.setVisibility(View.VISIBLE);
-//                        event.
-
-                    }
-                    return false;
-                }
-
-                private boolean dropEventNotHandled (DragEvent event){
-                    return !event.getResult();
-                }
-
-            });
+//            View v = (View)notesHolder.linearLayout.getParent();
+//            v.setOnDragListener(new View.OnDragListener() {
+//                @Override
+//                public boolean onDrag(View v, DragEvent event) {
+//                    final View dragView = (View) event.getLocalState();
+//                    Log.d("motion_ended_123", event.toString());
+//                    if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+//                        Log.d("motion_ended", event.toString());
+//                        if (dropEventNotHandled(event)) {
+//                            dragView.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    dragView.setVisibility(View.VISIBLE);
+//                                    ((MainActivity) activity).CategoryForChoosing(false);
+//                                }
+//                            });
+//                        }
+////                        v.setVisibility(View.VISIBLE);
+////                        event.
+//
+//                    }
+//                    return true;
+//                }
+//
+//                private boolean dropEventNotHandled(DragEvent event) {
+//                    return !event.getResult();
+//                }
+//
+//            });
 
         } else {
             ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
