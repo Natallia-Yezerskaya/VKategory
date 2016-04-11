@@ -1,6 +1,8 @@
 package com.natallia.vkategory;
 
+import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
@@ -8,10 +10,11 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 import com.natallia.vkategory.database.DBHelper;
@@ -26,9 +29,10 @@ public class MainActivity extends AppCompatActivity
     CategoryFragment fragmentCategory = null;
     public DataManager dataManager;
     private DBHelper dbHelper;
-    private LinearLayout.LayoutParams lParams1;
-    private LinearLayout.LayoutParams lParams2;
-   // PostsFragment postsFragment;
+    private FrameLayout.LayoutParams lParams1;
+    private int mWidthLayoutCategory;
+    FrameLayout layoutCategory;
+
 
 
      @Override
@@ -40,7 +44,6 @@ public class MainActivity extends AppCompatActivity
 
          dbHelper = new DBHelper(this);
          dataManager = new DataManager(this,dbHelper);
-         //dataManager.createPostsList(0);
 
          FragmentManager fm = getSupportFragmentManager();
          fragmentCategory = (CategoryFragment) fm.findFragmentByTag(CATEGORY_FRAGMENT_INSTANCE_NAME);
@@ -52,6 +55,12 @@ public class MainActivity extends AppCompatActivity
                      .replace(R.id.containerCategory, fragmentCategory)
                      .commitAllowingStateLoss();
          }
+
+         layoutCategory = (FrameLayout) findViewById(R.id.containerCategory);
+         //FrameLayout layoutPosts = (FrameLayout) findViewById(R.id.containerPosts);
+         lParams1 = (FrameLayout.LayoutParams) layoutCategory.getLayoutParams();
+          mWidthLayoutCategory = lParams1.width;
+
 
          fragmentPost = (PostsFragment) fm.findFragmentByTag(POST_FRAGMENT_INSTANCE_NAME);
          if(fragmentPost == null){
@@ -160,6 +169,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void OnPostCategoryChange(int postId, int categoryId) {
+
         DataManager.getInstance().replacePostsIntoCategory(postId, categoryId);
         fragmentPost.removePostFromView(postId);
     }
@@ -169,25 +179,37 @@ public class MainActivity extends AppCompatActivity
 
         fragmentCategory.CategoryForChoosing(forChoosing);
 
-        FrameLayout layoutCategory = (FrameLayout) findViewById(R.id.containerCategory);
-        FrameLayout layoutPosts = (FrameLayout) findViewById(R.id.containerPosts);
-        lParams1 = (LinearLayout.LayoutParams) layoutCategory.getLayoutParams();
-        lParams2 = (LinearLayout.LayoutParams) layoutPosts.getLayoutParams();
 
+
+        Resources r = getResources();
+        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, r.getDisplayMetrics());
+        //int width_old = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mWidthLayoutCategory, r.getDisplayMetrics());
+
+//        if (forChoosing){
+//            lParams1.width = width;
+//        } else {
+//            lParams1.width = width_old;
+//    }
+
+
+
+        ValueAnimator valueAnimator = ValueAnimator.ofInt(mWidthLayoutCategory, width);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(final ValueAnimator animation) {
+
+                lParams1.width = (int)animation.getAnimatedValue();
+                layoutCategory.setLayoutParams(lParams1);
+            }
+        });
+
+        valueAnimator.setDuration(100);
         if (forChoosing){
-            lParams1.width =  lParams1.width+30;
-            lParams2.rightMargin = lParams2.rightMargin-30;
+            valueAnimator.start();
         }
-       else{
-            lParams1.weight = 2;
-            lParams2.weight = 8;
+        else{
+            valueAnimator.reverse();
         }
-
-
-
-        //int oldWidth = layout.getWidth();
-        //layout.setMinimumWidth(oldWidth+10);
-
     }
 
     @Override

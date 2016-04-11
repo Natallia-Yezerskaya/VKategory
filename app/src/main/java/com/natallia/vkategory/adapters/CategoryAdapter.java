@@ -54,12 +54,26 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         holder.categoryName.setText(categories.get(position).getName());
         holder.frameLayout.setOnClickListener(new View.OnClickListener() {
 
-
             @Override
             public void onClick(View v) {
+
+                // TODO переписать через интерфейс по книжке!!!
                 ((MainActivity) activity).refreshPostsFragment(categories.get(holder.getAdapterPosition()).getId());
             }
         });
+
+        final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0f, 64f);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                holder.frameLayout.setCardElevation((Float) animation.getAnimatedValue());
+                Log.d("motion_loc", holder.categoryName.getText().toString());
+            }
+        });
+
+        valueAnimator.setDuration(100);
+
+
         holder.frameLayout.getChildAt(0).setOnDragListener(new View.OnDragListener() {
             @Override
             public boolean onDrag(View v, DragEvent event) {
@@ -70,21 +84,36 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
 
                     Log.d("motion_drop", holder.categoryName.getText().toString());
+
+                            if (mCategoryFragmentEventHandler != null) {
+                                int id_post = event.getClipData().getItemAt(0).getIntent().getIntExtra("id_post", 0);
+                                mCategoryFragmentEventHandler.OnPostCategoryChange(id_post, categories.get(holder.getAdapterPosition()).getId());
+                                valueAnimator.reverse();
+                                ((MainActivity)activity).CategoryForChoosing(false);
+                            }
+
+                }
+
+
+                if (event.getAction() == DragEvent.ACTION_DRAG_LOCATION ) {
+
+
+                    Log.d("motion_location", holder.categoryName.getText().toString());
                     float x = event.getX();
                     float y = event.getY();
 
-                    Rect r = new Rect();
-                    for (int i = 0; i < holder.frameLayout.getChildCount(); i++) {
-                        holder.frameLayout.getChildAt(i).getHitRect(r);
-                        if (r.contains((int) x, (int) y)) {
-                            Log.d("motion_drop", String.valueOf(i));
-                            if (mCategoryFragmentEventHandler != null) {
-                                int id_post = event.getClipData().getItemAt(0).getIntent().getIntExtra("id_post", 0);
-                                mCategoryFragmentEventHandler.OnPostCategoryChange(id_post, categories.get(position).getId());
+
+                            if (!valueAnimator.isRunning() && valueAnimator.getAnimatedFraction() <= 0.1f){
+                                valueAnimator.start();
                             }
-                        }
-                    }
+
                 }
+
+                if (event.getAction() == DragEvent.ACTION_DRAG_EXITED ) {
+                    Log.d("motion_exited", holder.categoryName.getText().toString());
+                    valueAnimator.reverse();
+                }
+
                 if (event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
 
                     float x = event.getX();
@@ -103,30 +132,30 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             }
         });
         oldWidth = holder.frameLayout.getWidth();
-        if (forChoosing) {
-            ValueAnimator valueAnimator = ValueAnimator.ofFloat(0f, 64f);
-            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    holder.frameLayout.setCardElevation((Float) animation.getAnimatedValue());
-                    lParams1 =  holder.frameLayout.getLayoutParams();
-
-                    lParams1.width = lParams1.width+20;
-                }
-
-
-            });
-            valueAnimator.setDuration(100);
-            valueAnimator.start();
-
-            //holder.frameLayout.setMinimumWidth(holder.frameLayout.getWidth()+15);
-
-            //holder.frameLayout.setCardElevation(20f);
-        }
-        else {
-            holder.frameLayout.setCardElevation(4f);
-           // lParams1.width = oldWidth;
-        }
+//        if (forChoosing) {
+//            ValueAnimator valueAnimator = ValueAnimator.ofFloat(0f, 64f);
+//            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//                @Override
+//                public void onAnimationUpdate(ValueAnimator animation) {
+//                    holder.frameLayout.setCardElevation((Float) animation.getAnimatedValue());
+//                    lParams1 =  holder.frameLayout.getLayoutParams();
+//
+//                    lParams1.width = lParams1.width+20;
+//                }
+//
+//
+//            });
+//            valueAnimator.setDuration(100);
+//            valueAnimator.start();
+//
+//            //holder.frameLayout.setMinimumWidth(holder.frameLayout.getWidth()+15);
+//
+//            //holder.frameLayout.setCardElevation(20f);
+//        }
+//        else {
+//            holder.frameLayout.setCardElevation(4f);
+//           // lParams1.width = oldWidth;
+//        }
 
 
     }

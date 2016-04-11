@@ -1,6 +1,5 @@
 package com.natallia.vkategory;
 
-import android.animation.ValueAnimator;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,7 +14,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.FrameLayout;
 
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 import com.natallia.vkategory.adapters.CategoryAdapter;
@@ -36,7 +35,7 @@ public class CategoryFragment  extends Fragment {
    // private ListView listView;
     private RecyclerView mRecyclerView;
     private CategoryAdapter mAdapter;
-    private CardView mCardView;
+    //private FrameLayout mCardView;
     private CategoryFragmentEventHandler mCategoryFragmentEventHandler;
 
     public CategoryFragmentEventHandler getCategoryFragmentEventHandler() {
@@ -65,8 +64,8 @@ public class CategoryFragment  extends Fragment {
 
         btnCreate = (Button) view.findViewById(R.id.createCategory);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rvCategory);
-        mCardView = (CardView) view.findViewById(R.id.cardview);
-        mCardView.setMaxCardElevation(64f);
+       // mCardView = (FrameLayout) view.findViewById(R.id.frame_layout);
+       // mCardView.setMaxCardElevation(32f);
         btnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -84,7 +83,6 @@ public class CategoryFragment  extends Fragment {
                         }
                     }
                 };
-                //((MainActivity) getActivity()).dataManager.addCategory("Add Category");
 
             }
         });
@@ -151,19 +149,23 @@ public class CategoryFragment  extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void CategoryForChoosing(boolean forChoosing){
+    public void CategoryForChoosing(boolean forChoosing) {
         mAdapter.categoryForChoosing(forChoosing);
 
-
-        ValueAnimator valueAnimator = ValueAnimator.ofFloat(0f, 64f);
-        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mCardView.setCardElevation((Float) animation.getAnimatedValue());
-            }
-        });
-        valueAnimator.setDuration(100);
-        valueAnimator.start();
+//        ValueAnimator valueAnimator = ValueAnimator.ofFloat(4f, 32f);
+//        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator animation) {
+//                mCardView.setCardElevation((Float) animation.getAnimatedValue());
+//            }
+//        });
+//        valueAnimator.setDuration(100);
+//        if (forChoosing) {
+//            valueAnimator.start();
+//        }
+//
+//    else {
+//            valueAnimator.reverse();
+//    }
     }
-
 }

@@ -51,7 +51,7 @@ public class PostsFragment extends Fragment {
         PostsFragment fragment = new PostsFragment();
         fragment.idCategory = intent.getIntExtra("idCategory",0);
 
-        return fragment;
+        return fragment; //TODO можно сделать через setID
     }
 
     public NotesAdapter getmAdapter() {

@@ -22,25 +22,26 @@
         app:headerLayout="@layout/nav_header_main"
         app:menu="@menu/activity_main_drawer" />
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:id="@+id/llmain">
+        android:id="@+id/flmain">
+
         <FrameLayout
-            android:layout_weight="2"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/containerPosts"
+            android:layout_marginLeft="54dp"
+            android:layout_marginRight="-18dp">
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="@dimen/layout_width"
             android:layout_height="match_parent"
             android:id="@+id/containerCategory">
         </FrameLayout>
 
-        <FrameLayout
-            android:layout_weight="8"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:id="@+id/containerPosts">
-        </FrameLayout>
-
-    </LinearLayout>
+    </FrameLayout>
 
 </android.support.v4.widget.DrawerLayout>

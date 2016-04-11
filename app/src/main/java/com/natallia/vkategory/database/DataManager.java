@@ -197,6 +197,17 @@ public class DataManager  {
         return noteList;
     }
 
+    public int getCategoryIdByPostId(int idPost){
+        List<Note> noteList = new ArrayList<Note>();
+        try {
+            noteList = notesDAO.queryBuilder().where().eq(Note.FIELD_ID, idPost).query();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return noteList.get(0).getCategory().getId();
+    }
+
 
 
     public void replacePostsIntoCategory(int idNote,int idCategory){

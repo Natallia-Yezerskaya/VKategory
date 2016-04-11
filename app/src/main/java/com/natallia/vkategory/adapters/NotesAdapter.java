@@ -8,7 +8,10 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,6 +22,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.DragShadowBuilder;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.widget.AbsListView;
@@ -130,7 +134,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
 
 
 
-    private View.DragShadowBuilder getTextThumbnailBuilder(Context context, CharSequence text) {
+    private DragShadowBuilder getTextThumbnailBuilder(Context context, CharSequence text) {
         TextView shadowView = (TextView) View.inflate(context,
                 R.layout.button_layout, null);
 
@@ -155,7 +159,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
 
         shadowView.layout(0, 0, shadowView.getMeasuredWidth(), shadowView.getMeasuredHeight());
         shadowView.invalidate();
-        return new View.DragShadowBuilder(shadowView);
+        return new DragShadowBuilder(shadowView);
     }
 
     @Override
@@ -164,6 +168,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
         if (holder instanceof NotesHolder) {
 
             final NotesHolder notesHolder = (NotesHolder) holder;
+            notesHolder.linearLayout.setVisibility(View.VISIBLE);
 
             notesHolder.noteText.setText(notes.get(position).getText());
             notesHolder.linearLayout.setMaxCardElevation(64f);
@@ -198,7 +203,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
                     //ViewPropertyAnimator viewPropertyAnimator = new ViewPropertyAnimator();
                     Log.d("motion", "ONTOUCH");
                     Intent intent = new Intent();
-                    intent.putExtra("id_post", notes.get(position).getId());
+                    intent.putExtra("id_post", notes.get(notesHolder.getAdapterPosition()).getId());
                     final ClipData clipData = ClipData.newIntent("id", intent);
 
 
@@ -227,9 +232,10 @@ public class NotesAdapter extends RecyclerView.Adapter{
 
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            final View.DragShadowBuilder dragShadowBuilder = new View.DragShadowBuilder(v);
+                            final MyDragShadowBuilder dragShadowBuilder = new MyDragShadowBuilder(v);
                             //View.DragShadowBuilder dragShadowBuilder = getTextThumbnailBuilder(v.getContext(), "HELLO");
                             //dragShadowBuilder
+                            //dragShadowBuilder.onProvideShadowMetrics(new Point(), new Point(0,0));
                             v.startDrag(clipData, dragShadowBuilder, v, 0);
                             ((CardView) v).setCardElevation(4f);
                             v.setVisibility(View.INVISIBLE);
@@ -330,5 +336,28 @@ public class NotesAdapter extends RecyclerView.Adapter{
             progressBar = (ProgressBar) v.findViewById(R.id.loading_progress);
         }
     }
+
+
+
+
+    private class MyDragShadowBuilder extends View.DragShadowBuilder{
+        public MyDragShadowBuilder(View view) {
+            super(view);
+        }
+
+        @Override
+        public void onProvideShadowMetrics(Point shadowSize, Point shadowTouchPoint) {
+           // super.onProvideShadowMetrics(shadowSize, shadowTouchPoint);
+            int width, height;
+
+            width = getView().getWidth();
+            height = getView().getHeight();
+
+            shadowSize.set(width, height);
+            shadowTouchPoint.set(width/5, height/5);
+        }
+    }
+
+
 }
 
