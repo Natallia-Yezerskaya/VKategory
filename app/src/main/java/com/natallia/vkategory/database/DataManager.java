@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.j256.ormlite.stmt.query.Not;
 import com.natallia.vkategory.UI.AsyncRequestListener;
 import com.natallia.vkategory.database.DAO.CategoryDAO;
 import com.natallia.vkategory.database.DAO.NotesDAO;
@@ -22,6 +23,7 @@ import org.json.JSONException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class DataManager  {
@@ -208,6 +210,9 @@ public class DataManager  {
         return noteList.get(0).getCategory().getId();
     }
 
+    public Note getPostById(int idPost) throws SQLException{
+        return notesDAO.getNoteById(idPost);
+    }
 
 
     public boolean replacePostsIntoCategory(int idNote,int idCategory){
@@ -226,5 +231,14 @@ public class DataManager  {
             e.printStackTrace();
         }
         return true;
+    }
+
+    public List<Photo> getPhotoList(Note post) throws SQLException{
+        Iterator<Photo> iter = post.getPhotos().iterator();
+        List<Photo> photos = new ArrayList<Photo>();
+        while (iter.hasNext()) {
+            photos.add(iter.next());
+        }
+        return photos;
     }
 }

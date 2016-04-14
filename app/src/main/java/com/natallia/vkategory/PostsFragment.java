@@ -1,7 +1,6 @@
 package com.natallia.vkategory;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -13,20 +12,14 @@ import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
-import android.widget.Toast;
 
-import com.j256.ormlite.stmt.query.Not;
 import com.natallia.vkategory.UI.AsyncRequestListener;
 import com.natallia.vkategory.UI.OnLoadMoreListener;
+import com.natallia.vkategory.UI.PostDraggingListener;
 import com.natallia.vkategory.adapters.NotesAdapter;
 import com.natallia.vkategory.database.DataManager;
 import com.natallia.vkategory.models.Note;
-import com.vk.sdk.api.VKResponse;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,10 +35,22 @@ public class PostsFragment extends Fragment {
     private boolean loading;
     private List<Note> values;
 
+    static final String TAG = "POST_FRAGMENT";
+
     private View footer;
 
     protected Handler handler;
 
+
+    private PostDraggingListener postDraggingListener;
+
+    public PostDraggingListener getPostDraggingListener() {
+        return postDraggingListener;
+    }
+
+    public void setPostDraggingListener(PostDraggingListener postDraggingListener) {
+        this.postDraggingListener = postDraggingListener;
+    }
 
     public static PostsFragment createFragment(Intent intent) {
 
@@ -82,6 +87,7 @@ public class PostsFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         values = DataManager.getInstance().getPostsListByCategory(idCategory);
         mAdapter = new NotesAdapter(values,getActivity(),getContext(),mRecyclerView);
+        mAdapter.setPostDraggingListener(postDraggingListener);
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
@@ -113,16 +119,18 @@ public class PostsFragment extends Fragment {
         mRecyclerView.setOnDragListener(new View.OnDragListener() {
             @Override
             public boolean onDrag(View v, DragEvent event) {
-                final View dragView=(View) event.getLocalState();
+                final View dragView = (View) event.getLocalState();
                 Log.d("motion_ended_fragment", event.toString());
                 if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
                     Log.d("motion_ended_fragment", event.toString());
-                    if(dropEventNotHandled(event)){
+                    if (dropEventNotHandled(event)) {
                         dragView.post(new Runnable() {
                             @Override
                             public void run() {
                                 dragView.setVisibility(View.VISIBLE);
-                                ((MainActivity)getActivity()).CategoryForChoosing(false);
+                                if (postDraggingListener != null) {
+                                    postDraggingListener.onPostDrag(false);
+                                }
                             }
                         });
                     }
@@ -132,6 +140,7 @@ public class PostsFragment extends Fragment {
 
                 return true;
             }
+
             private boolean dropEventNotHandled(DragEvent event) {
                 return !event.getResult();
             }
@@ -139,6 +148,7 @@ public class PostsFragment extends Fragment {
 
         mAdapter.notifyDataSetChanged();
 
+        Log.d(TAG, "onCreateView: ");
 
         return view;
     }
@@ -179,4 +189,11 @@ public class PostsFragment extends Fragment {
         outState.putInt("idCategory", idCategory);
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null){
+            idCategory = savedInstanceState.getInt("idCategory",0);
+        }
+    }
 }

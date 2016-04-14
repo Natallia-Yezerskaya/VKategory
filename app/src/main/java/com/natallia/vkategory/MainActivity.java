@@ -1,33 +1,29 @@
 package com.natallia.vkategory;
 
-import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 
-import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 import com.natallia.vkategory.UI.MyColor;
 import com.natallia.vkategory.database.DBHelper;
 import com.natallia.vkategory.database.DataManager;
 
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, CategoryFragmentEventHandler {
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     private static String POST_FRAGMENT_INSTANCE_NAME = "fragmentPost";
     private static String CATEGORY_FRAGMENT_INSTANCE_NAME = "fragmentCategory";
+    private static String MAIN_FRAGMENT_INSTANCE_NAME = "fragmentMain";
+    private static String DETAIL_FRAGMENT_INSTANCE_NAME = "fragmentMain";
     PostsFragment fragmentPost = null;
     CategoryFragment fragmentCategory = null;
     public DataManager dataManager;
@@ -36,7 +32,7 @@ public class MainActivity extends AppCompatActivity
     private int mWidthLayoutCategory;
     FrameLayout layoutCategory;
 
-
+    public FragmentMain fragmentMain;
 
 
      @Override
@@ -52,26 +48,38 @@ public class MainActivity extends AppCompatActivity
 
 
          FragmentManager fm = getSupportFragmentManager();
-         fragmentCategory = (CategoryFragment) fm.findFragmentByTag(CATEGORY_FRAGMENT_INSTANCE_NAME);
-         if(fragmentCategory == null){
-             fragmentCategory = new CategoryFragment();
-             fragmentCategory.setCategoryFragmentEventHandler(this);
-             getSupportFragmentManager()
-                     .beginTransaction()
-                     .replace(R.id.containerCategory, fragmentCategory,CATEGORY_FRAGMENT_INSTANCE_NAME)
-                     .commitAllowingStateLoss();
+
+         if (savedInstanceState==null) {
+             fragmentMain = (FragmentMain) fm.findFragmentByTag(MAIN_FRAGMENT_INSTANCE_NAME);
+             if (fragmentMain == null) {
+                 fragmentMain = FragmentMain.createFragment();
+                 getSupportFragmentManager()
+                         .beginTransaction()
+                         .replace(R.id.container_main, fragmentMain, MAIN_FRAGMENT_INSTANCE_NAME)
+                                 //.addToBackStack(null)
+                         .commit();
+             }
          }
-
-         layoutCategory = (FrameLayout) findViewById(R.id.containerCategory);
-         //FrameLayout layoutPosts = (FrameLayout) findViewById(R.id.containerPosts);
-         lParams1 = (FrameLayout.LayoutParams) layoutCategory.getLayoutParams();
-          mWidthLayoutCategory = lParams1.width;
-
-
-         fragmentPost = (PostsFragment) fm.findFragmentByTag(POST_FRAGMENT_INSTANCE_NAME);
-         if(fragmentPost == null){
-            refreshPostsFragment(0);
-         }
+//         fragmentCategory = (CategoryFragment) fm.findFragmentByTag(CATEGORY_FRAGMENT_INSTANCE_NAME);
+//         if(fragmentCategory == null){
+//             fragmentCategory = new CategoryFragment();
+//           //  fragmentCategory.setCategoryFragmentEventHandler(this);
+//             getSupportFragmentManager()
+//                     .beginTransaction()
+//                     .replace(R.id.containerCategory, fragmentCategory,CATEGORY_FRAGMENT_INSTANCE_NAME)
+//                     .commit();
+//         }
+//
+//         layoutCategory = (FrameLayout) findViewById(R.id.containerCategory);
+//         //FrameLayout layoutPosts = (FrameLayout) findViewById(R.id.containerPosts);
+//         lParams1 = (FrameLayout.LayoutParams) layoutCategory.getLayoutParams();
+//          mWidthLayoutCategory = lParams1.width;
+//
+//
+//         fragmentPost = (PostsFragment) fm.findFragmentByTag(POST_FRAGMENT_INSTANCE_NAME);
+//         if(fragmentPost == null){
+//            refreshPostsFragment(0);
+//         }
 
          //refreshPostsFragment(0);
 
@@ -162,66 +170,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void refreshPostsFragment(int idCategory) {
-
-        Intent intent = new Intent();
-        intent.putExtra("idCategory", idCategory);
-        fragmentPost = PostsFragment.createFragment(intent);
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.containerPosts,fragmentPost,POST_FRAGMENT_INSTANCE_NAME)
-                .commitAllowingStateLoss();
-    }
-
-    @Override
-    public boolean OnPostCategoryChange(int postId, int categoryId) {
-
-        boolean replaced  = DataManager.getInstance().replacePostsIntoCategory(postId, categoryId);
-        if (replaced) {
-            fragmentPost.removePostFromView(postId);
-            return true;
-        }
-        return false;
-    }
-
-
-    public void CategoryForChoosing(boolean forChoosing) {
-
-        fragmentCategory.CategoryForChoosing(forChoosing);
-
-
-
-        Resources r = getResources();
-        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, r.getDisplayMetrics());
-        //int width_old = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mWidthLayoutCategory, r.getDisplayMetrics());
-
-//        if (forChoosing){
-//            lParams1.width = width;
-//        } else {
-//            lParams1.width = width_old;
-//    }
-
-
-
-        ValueAnimator valueAnimator = ValueAnimator.ofInt(mWidthLayoutCategory, width);
-        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(final ValueAnimator animation) {
-
-                lParams1.width = (int)animation.getAnimatedValue();
-                layoutCategory.setLayoutParams(lParams1);
-            }
-        });
-
-        valueAnimator.setDuration(100);
-        if (forChoosing){
-            valueAnimator.start();
-        }
-        else{
-            valueAnimator.reverse();
-        }
-    }
-
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
@@ -230,5 +178,21 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
     }
+
+
+
+    public void openDetailFragment(int postID) {
+        FragmentDetail details = FragmentDetail.createFragment();
+        details.setPostID(postID);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container_main, details,DETAIL_FRAGMENT_INSTANCE_NAME)
+                .addToBackStack(null)
+                .commit();
+    }
+
+
+
 }

@@ -27,22 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:id="@+id/flmain">
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/containerPosts"
-            android:layout_marginLeft="70dp"
-            android:layout_marginRight="-2dp"
-            >
-        </FrameLayout>
-
-        <FrameLayout
-            android:layout_width="@dimen/layout_width"
-            android:layout_height="match_parent"
-            android:id="@+id/containerCategory">
-        </FrameLayout>
+        android:id="@+id/container_main">
 
     </FrameLayout>
 

@@ -26,4 +26,8 @@ public class NotesDAO extends BaseDaoImpl<Note, Integer>{
         return this.queryForAll();
     }
 
+    public Note getNoteById(int id) throws SQLException{
+        return this.queryForId(id);
+    }
+
 }

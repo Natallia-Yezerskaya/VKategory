@@ -3,12 +3,7 @@ package com.natallia.vkategory.adapters;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
-import android.support.v4.graphics.ColorUtils;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.DragEvent;
@@ -16,13 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.natallia.vkategory.MainActivity;
 import com.natallia.vkategory.R;
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 import com.natallia.vkategory.UI.MyColor;
+import com.natallia.vkategory.UI.PostDraggingListener;
 import com.natallia.vkategory.models.Category;
 
 import java.util.List;
@@ -36,6 +30,17 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     private ViewGroup.LayoutParams lParams1;
     private int oldWidth;
     private int idSelectedCategory ;
+    private PostDraggingListener postDraggingListener;
+    static final String TAG = "CATEGORY_adapter";
+
+
+    public PostDraggingListener getPostDraggingListener() {
+        return postDraggingListener;
+    }
+
+    public void setPostDraggingListener(PostDraggingListener postDraggingListener) {
+        this.postDraggingListener = postDraggingListener;
+    }
 
     public int getIdSelectedCategory() {
         return idSelectedCategory;
@@ -56,6 +61,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public CategoryAdapter(List<Category> categories,Activity activity){
         this.categories = categories;
         this.activity = activity;
+        Log.d(TAG, "CategoryAdapter: constructor ");
     }
 
     @Override
@@ -66,6 +72,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     @Override
     public void onBindViewHolder(final CategoryHolder holder, final int position) {
+        //Log.d(TAG, "onBindViewHolder: ");
         holder.categoryName.setText(categories.get(position).getName());
         if (position == idSelectedCategory){
             holder.frameLayout.setBackgroundResource(R.drawable.rectangle_rounded_accent);
@@ -81,7 +88,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             public void onClick(View v) {
 
                 // TODO переписать через интерфейс по книжке!!!
-                ((MainActivity) activity).refreshPostsFragment(categories.get(holder.getAdapterPosition()).getId());
+
+
+                mCategoryFragmentEventHandler.refreshPost(categories.get(holder.getAdapterPosition()).getId());
+                //((MainActivity) activity).refreshPostsFragment(categories.get(holder.getAdapterPosition()).getId());
+
+
                 notifyItemChanged(idSelectedCategory);
                 idSelectedCategory = holder.getAdapterPosition();
 
@@ -136,7 +148,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                                 int id_post = event.getClipData().getItemAt(0).getIntent().getIntExtra("id_post", 0);
 
                                 boolean replaced = mCategoryFragmentEventHandler.OnPostCategoryChange(id_post, categories.get(holder.getAdapterPosition()).getId());
-                                ((MainActivity) activity).CategoryForChoosing(false);
+
+
+                                if (postDraggingListener != null) {
+                                    postDraggingListener.onPostDrag(false);
+                                }
+
+                                //((MainActivity) activity).CategoryForChoosing(false);
 
                                 if (replaced) {
                                     valueAnimator.reverse();

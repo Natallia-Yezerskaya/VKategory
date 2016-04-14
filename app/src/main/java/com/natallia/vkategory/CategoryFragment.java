@@ -11,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,6 +22,7 @@ import android.widget.FrameLayout;
 
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 
+import com.natallia.vkategory.UI.PostDraggingListener;
 import com.natallia.vkategory.adapters.CategoryAdapter;
 import com.natallia.vkategory.database.DataManager;
 import com.natallia.vkategory.models.Category;
@@ -33,6 +35,7 @@ import java.util.List;
 public class CategoryFragment  extends Fragment {
 
     static final int PICK_CONTACT_REQUEST = 1;
+    static final String TAG = "CATEGORY_FRAGMENT";
 
 
 
@@ -43,6 +46,16 @@ public class CategoryFragment  extends Fragment {
     //private FrameLayout mCardView;
     private CategoryFragmentEventHandler mCategoryFragmentEventHandler;
     private int idSelectedCategory;
+
+    private PostDraggingListener postDraggingListener;
+
+    public PostDraggingListener getPostDraggingListener() {
+        return postDraggingListener;
+    }
+
+    public void setPostDraggingListener(PostDraggingListener postDraggingListener) {
+        this.postDraggingListener = postDraggingListener;
+    }
 
     public int getIdSelectedCategory() {
         return idSelectedCategory;
@@ -79,15 +92,13 @@ public class CategoryFragment  extends Fragment {
             idSelectedCategory = savedInstanceState.getInt("idSelectedCategory", 0);
         }
 
-
-
         btnCreate = (FloatingActionButton) view.findViewById(R.id.fab);
         btnCreate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent2)));
 
         //btnCreate.setBackground();
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rvCategory);
-       // mCardView = (FrameLayout) view.findViewById(R.id.frame_layout);
-       // mCardView.setMaxCardElevation(32f);
+        // mCardView = (FrameLayout) view.findViewById(R.id.frame_layout);
+        // mCardView.setMaxCardElevation(32f);
         btnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,13 +125,27 @@ public class CategoryFragment  extends Fragment {
         List<Category> values = DataManager.getInstance().getCategoriesList();
         mAdapter = new CategoryAdapter(values,getActivity());
         mAdapter.setIdSelectedCategory(idSelectedCategory);
+        mAdapter.setPostDraggingListener(postDraggingListener);
         mAdapter.setCategoryFragmentEventHandler(mCategoryFragmentEventHandler);
         mRecyclerView.setAdapter(mAdapter);
-       mAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
 
+        Log.d(TAG, "onCreateView: ");
         return view;
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        View view = getView();
+        if (view != null) {
+            
+
+        }
+        Log.d(TAG, "onStart: ");
+    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -132,28 +157,33 @@ public class CategoryFragment  extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume: ");
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Log.d(TAG, "onPause: ");
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        Log.d(TAG, "onStop: ");
     }
 
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.d(TAG, "onDestroyView: ");
     }
 
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
     }
 
 
@@ -165,6 +195,11 @@ public class CategoryFragment  extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: ");
+
+        if (savedInstanceState != null) {
+            idSelectedCategory = savedInstanceState.getInt("idSelectedCategory", 0);
+        }
     }
 
     @Override
@@ -175,27 +210,16 @@ public class CategoryFragment  extends Fragment {
     public void CategoryForChoosing(boolean forChoosing) {
         mAdapter.categoryForChoosing(forChoosing);
 
-//        ValueAnimator valueAnimator = ValueAnimator.ofFloat(4f, 32f);
-//        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                mCardView.setCardElevation((Float) animation.getAnimatedValue());
-//            }
-//        });
-//        valueAnimator.setDuration(100);
-//        if (forChoosing) {
-//            valueAnimator.start();
-//        }
-//
-//    else {
-//            valueAnimator.reverse();
-//    }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState: ");
         super.onSaveInstanceState(outState);
-        idSelectedCategory = mAdapter.getIdSelectedCategory();
+        if (mAdapter!=null){ //TODO посмотреть
+            idSelectedCategory = mAdapter.getIdSelectedCategory();
+        }
+
         outState.putInt("idSelectedCategory", idSelectedCategory);
     }
 }

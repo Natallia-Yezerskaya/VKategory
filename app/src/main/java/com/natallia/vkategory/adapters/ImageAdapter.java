@@ -21,12 +21,12 @@ import static android.widget.GridView.*;
 public class ImageAdapter extends BaseAdapter {
     private Context mContext;
     private List<Photo> mPhotos;
-    private int mPosition;
+    //private int mPosition;
 
-    public ImageAdapter(Context mContext, List<Photo> photos,int mPosition) {
+    public ImageAdapter(Context mContext, List<Photo> photos) {
         this.mContext = mContext;
         this.mPhotos = photos;
-        this.mPosition = mPosition;
+        //this.mPosition = mPosition;
     }
 
 

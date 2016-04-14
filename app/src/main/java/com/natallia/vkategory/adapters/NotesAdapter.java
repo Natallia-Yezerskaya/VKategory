@@ -21,9 +21,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.natallia.vkategory.MainActivity;
 import com.natallia.vkategory.R;
 import com.natallia.vkategory.UI.OnLoadMoreListener;
+import com.natallia.vkategory.UI.PostDraggingListener;
 import com.natallia.vkategory.models.Note;
 import com.natallia.vkategory.models.Photo;
 
@@ -39,6 +39,9 @@ public class NotesAdapter extends RecyclerView.Adapter{
     private Context context;
     private OnLoadMoreListener onLoadMoreListener;
     private boolean loading;
+    private PostDraggingListener postDraggingListener;
+
+
 
     private final int VIEW_ITEM = 1;
     private final int VIEW_PROG = 0;
@@ -130,6 +133,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
             notesHolder.cardView.setMaxCardElevation(20f);
             notesHolder.cardView.setCardElevation(4f);
 
+            // TODO datamanager
                 Iterator<Photo> iter = notes.get(position).getPhotos().iterator();
                 int k = 0;
                 List<Photo> photos = new ArrayList<Photo>();
@@ -160,11 +164,24 @@ public class NotesAdapter extends RecyclerView.Adapter{
 
             //}
 
+            notesHolder.cardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (postDraggingListener != null) {
+                        postDraggingListener.onPostDetail(notes.get(notesHolder.getAdapterPosition()).getId());
+                    }
+                }
+            });
+
+
             notesHolder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
 
                 @Override
                 public boolean onLongClick(final View v) {
-                    ((MainActivity) activity).CategoryForChoosing(true);
+                    if (postDraggingListener != null) {
+                        postDraggingListener.onPostDrag(true);
+                    }
+                    //((MainActivity) activity).CategoryForChoosing(true);
                     Log.d("motion", "ONTOUCH");
                     Intent intent = new Intent();
                     intent.putExtra("id_post", notes.get(notesHolder.getAdapterPosition()).getId());
@@ -242,7 +259,7 @@ public class NotesAdapter extends RecyclerView.Adapter{
             super(itemView);
             noteText = (TextView) itemView.findViewById(R.id.tvPost);
             cardView = (CardView)itemView.findViewById(R.id.layoutPost);
-            gridView = (RecyclerView)itemView.findViewById(R.id.gvMain);
+            gridView = (RecyclerView)itemView.findViewById(R.id.gvPhoto);
 //            cardView.getViewTreeObserver().
 //                    addOnGlobalLayoutListener(new OnViewGlobalLayoutListener(cardView));
             }
@@ -306,5 +323,12 @@ public class NotesAdapter extends RecyclerView.Adapter{
         }
     }
 
+    public PostDraggingListener getPostDraggingListener() {
+        return postDraggingListener;
+    }
+
+    public void setPostDraggingListener(PostDraggingListener postDraggingListener) {
+        this.postDraggingListener = postDraggingListener;
+    }
 }
 
