@@ -15,6 +15,7 @@ import com.natallia.vkategory.database.HelperFactory;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 
 @DatabaseTable(tableName = "notes")
@@ -39,8 +40,24 @@ public class Note {
     @ForeignCollectionField(eager = true)
     private ForeignCollection<Photo> photos;
 
-    //@DatabaseField (columnName = "id_photo", foreign = true, foreignAutoRefresh = true)
-    //private Photo photo;
+
+    @DatabaseField
+    private String sourceName;
+
+    @DatabaseField
+    private String sourcePhoto_50;
+
+    @DatabaseField
+    private String sourcePhoto_100;
+
+    @DatabaseField
+    private long date;
+
+    @DatabaseField()
+    private int from_id;
+
+    @DatabaseField()
+    private int owner_id;
 
 
     public Note() {
@@ -50,145 +67,6 @@ public class Note {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        /*photos = new ForeignCollection<Photo>() {
-            @Override
-            public CloseableIterator<Photo> iterator(int i) {
-                return null;
-            }
-
-            @Override
-            public CloseableIterator<Photo> closeableIterator(int i) {
-                return null;
-            }
-
-            @Override
-            public CloseableIterator<Photo> iteratorThrow() throws SQLException {
-                return null;
-            }
-
-            @Override
-            public CloseableIterator<Photo> iteratorThrow(int i) throws SQLException {
-                return null;
-            }
-
-            @Override
-            public CloseableWrappedIterable<Photo> getWrappedIterable() {
-                return null;
-            }
-
-            @Override
-            public CloseableWrappedIterable<Photo> getWrappedIterable(int i) {
-                return null;
-            }
-
-            @Override
-            public void closeLastIterator() throws SQLException {
-
-            }
-
-            @Override
-            public boolean isEager() {
-                return false;
-            }
-
-            @Override
-            public int update(Photo photo) throws SQLException {
-                return 0;
-            }
-
-            @Override
-            public int updateAll() throws SQLException {
-                return 0;
-            }
-
-            @Override
-            public int refresh(Photo photo) throws SQLException {
-                return 0;
-            }
-
-            @Override
-            public int refreshAll() throws SQLException {
-                return 0;
-            }
-
-            @Override
-            public int refreshCollection() throws SQLException {
-                return 0;
-            }
-
-            @Override
-            public boolean add(Photo photo) {
-                return false;
-            }
-
-            @Override
-            public CloseableIterator<Photo> closeableIterator() {
-                return null;
-            }
-
-            @Override
-            public boolean addAll(Collection<? extends Photo> collection) {
-                return false;
-            }
-
-            @Override
-            public void clear() {
-
-            }
-
-            @Override
-            public boolean contains(Object object) {
-                return false;
-            }
-
-            @Override
-            public boolean containsAll(Collection<?> collection) {
-                return false;
-            }
-
-            @Override
-            public boolean isEmpty() {
-                return false;
-            }
-
-            @NonNull
-            @Override
-            public Iterator<Photo> iterator() {
-                return null;
-            }
-
-            @Override
-            public boolean remove(Object object) {
-                return false;
-            }
-
-            @Override
-            public boolean removeAll(Collection<?> collection) {
-                return false;
-            }
-
-            @Override
-            public boolean retainAll(Collection<?> collection) {
-                return false;
-            }
-
-            @Override
-            public int size() {
-                return 0;
-            }
-
-            @NonNull
-            @Override
-            public Object[] toArray() {
-                return new Object[0];
-            }
-
-            @NonNull
-            @Override
-            public <T> T[] toArray(T[] array) {
-                return null;
-            }
-        };*/
     }
 
     public int getId() {
@@ -214,14 +92,6 @@ public class Note {
     public void setCategory(Category category) {
         this.category = category;
     }
-
-//    public Photo getPhoto() {
-//        return photo;
-//    }
-//
-//    public void setPhoto(Photo photo) {
-//        this.photo = photo;
-//    }
 
     public void addPhoto(Photo value){
         value.setNote(this);
@@ -259,5 +129,53 @@ public class Note {
 
     public void setVkID(int vkID) {
         this.vkID = vkID;
+    }
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
+
+    public String getSourcePhoto_50() {
+        return sourcePhoto_50;
+    }
+
+    public void setSourcePhoto_50(String sourcePhoto_50) {
+        this.sourcePhoto_50 = sourcePhoto_50;
+    }
+
+    public String getSourcePhoto_100() {
+        return sourcePhoto_100;
+    }
+
+    public void setSourcePhoto_100(String sourcePhoto_100) {
+        this.sourcePhoto_100 = sourcePhoto_100;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public void setDate(long date) {
+        this.date = date;
+    }
+
+    public int getFrom_id() {
+        return from_id;
+    }
+
+    public void setFrom_id(int from_id) {
+        this.from_id = from_id;
+    }
+
+    public int getOwner_id() {
+        return owner_id;
+    }
+
+    public void setOwner_id(int owner_id) {
+        this.owner_id = owner_id;
     }
 }

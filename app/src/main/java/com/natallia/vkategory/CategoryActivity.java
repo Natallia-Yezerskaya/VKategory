@@ -99,4 +99,87 @@ public class CategoryActivity extends ActionBarActivity {
             }
         }
     }
+
+    public static class RenameCategoryDialog extends DialogFragment {
+
+        public RenameCategoryDialogListener mListener;
+        public Activity activity;
+        private String oldName;
+
+        public String getOldName() {
+            return oldName;
+        }
+
+        public void setOldName(String oldName) {
+            this.oldName = oldName;
+        }
+
+        public interface RenameCategoryDialogListener {
+            public void onDialogPositiveClick(DialogFragment dialog, String text);
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            final View view = inflater.inflate(R.layout.dialog_set_name, null);
+            ((EditText) view.findViewById(R.id.et_dialog)).setText(oldName);
+            builder.setView(view);
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    String newName = ((EditText) view.findViewById(R.id.et_dialog)).getText().toString();
+                    mListener.onDialogPositiveClick(RenameCategoryDialog.this, newName);
+                }
+            })
+                    .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            RenameCategoryDialog.this.getDialog().cancel();
+                        }
+                    });
+            return builder.create();
+        }
+
+        @Override
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            if (mListener==null){
+                dismiss();
+            }
+        }
+    }
+
+    public static class DeleteCategoryDialog extends DialogFragment {
+
+        public DeleteCategoryDialogListener mListener;
+        public Activity activity;
+        public interface DeleteCategoryDialogListener {
+            public void onDialogPositiveClick(DialogFragment dialog);
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            builder.setTitle("Delete category?");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    mListener.onDialogPositiveClick(DeleteCategoryDialog.this);
+                }
+            })
+                    .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            DeleteCategoryDialog.this.getDialog().cancel();
+                        }
+                    });
+            return builder.create();
+        }
+
+        @Override
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            if (mListener==null){
+                dismiss();
+            }
+        }
+    }
 }

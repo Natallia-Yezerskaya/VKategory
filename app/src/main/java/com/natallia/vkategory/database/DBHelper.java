@@ -11,11 +11,9 @@ import com.j256.ormlite.table.TableUtils;
 import com.natallia.vkategory.database.DAO.CategoryDAO;
 import com.natallia.vkategory.database.DAO.NotesDAO;
 import com.natallia.vkategory.database.DAO.PhotoDAO;
-import com.natallia.vkategory.database.DAO.PostDAO;
 import com.natallia.vkategory.models.Category;
 import com.natallia.vkategory.models.Note;
 import com.natallia.vkategory.models.Photo;
-import com.natallia.vkategory.models.Post;
 
 import java.sql.SQLException;
 
@@ -26,7 +24,6 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
     // the DAO object we use to access
     private CategoryDAO categoryDao = null;
     private NotesDAO noteDao = null;
-    private PostDAO postDao = null;
     private PhotoDAO photoDao = null;
 
     public DBHelper(Context context) {
@@ -72,12 +69,6 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
         return noteDao;
     }
 
-    public PostDAO getPostDao() throws SQLException {
-        if (postDao == null) {
-            postDao =  new PostDAO(getConnectionSource(), Post.class);
-        }
-        return postDao;
-    }
 
     public PhotoDAO getPhotoDao() throws SQLException {
         if (photoDao == null) {
@@ -95,6 +86,6 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
         super.close();
         categoryDao = null;
         noteDao = null;
-        postDao = null;
+
     }
 }

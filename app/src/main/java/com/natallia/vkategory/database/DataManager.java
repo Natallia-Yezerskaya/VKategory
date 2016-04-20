@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.j256.ormlite.stmt.query.Not;
 import com.natallia.vkategory.UI.AsyncRequestListener;
 import com.natallia.vkategory.database.DAO.CategoryDAO;
 import com.natallia.vkategory.database.DAO.NotesDAO;
@@ -16,8 +15,15 @@ import com.vk.sdk.api.VKApiConst;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
+import com.vk.sdk.api.methods.VKApiGroups;
+import com.vk.sdk.api.model.VKApiCommunity;
+import com.vk.sdk.api.model.VKApiOwner;
 import com.vk.sdk.api.model.VKApiPhoto;
+import com.vk.sdk.api.model.VKApiPost;
+import com.vk.sdk.api.model.VKApiUser;
+import com.vk.sdk.api.model.VKList;
 import com.vk.sdk.api.model.VKPostArray;
+import com.vk.sdk.api.model.VKUsersArray;
 
 import org.json.JSONException;
 
@@ -29,7 +35,7 @@ import java.util.List;
 public class DataManager  {
     public Activity activity;
     private static DataManager instance;
-    public static String LOG_TAG = "myTags";
+    public static String TAG = "myTags";
     List<Note> notesLoaded;
     SQLiteDatabase db;
     NotesDAO notesDAO;
@@ -65,6 +71,17 @@ public class DataManager  {
         return category;
     }
 
+    public Category renameCategory(Category category, String name){
+        try {
+            category.setName(name);
+            categoryDAO.update(category);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return category;
+    }
+
+
     public List<Category> getCategoriesList(){
         List<Category> list = null;
         try {
@@ -78,38 +95,58 @@ public class DataManager  {
 
 
     public void createPostsList(){
-        VKRequest request =  new VKRequest("fave.getPosts", VKParameters.from(VKApiConst.COUNT,"10"));
+        VKRequest request =  new VKRequest("fave.getPosts", VKParameters.from(VKApiConst.COUNT,"10",VKApiConst.EXTENDED,"1"));
         request.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
                 super.onComplete(response);
                 VKPostArray postArray = new VKPostArray();
+                VKList<VKApiUser> userList = new VKList<VKApiUser>();
+                VKList<VKApiCommunity> groupsList = new VKList<VKApiCommunity>();
+
                 try {
+                    userList.fill(response.json.getJSONObject("response").getJSONArray("profiles"), VKApiUser.class);
+                    groupsList.fill(response.json.getJSONObject("response").getJSONArray("groups"), VKApiCommunity.class);
                     postArray.parse(response.json);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
-                List<Category> listCategory  = null;
+                Category cat = null;
                 try {
-                    listCategory = categoryDAO.getAllCategories();
+                   cat = categoryDAO.getCategoryById(1);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                Category cat = listCategory.get(0);
+
                 for (int i = 0; i <postArray.size() ; i++) {
+                    VKApiPost post = postArray.get(i);
+
                     Note note = new Note();
-                    note.setText(postArray.get(i).text);
+                    note.setText(post.text);
                     note.setCategory(cat);
-                    note.setVkID(postArray.get(i).id);
+                    note.setVkID(post.id);
+                    note.setFrom_id(post.from_id);
+                    note.setOwner_id(post.to_id);
+                    if (userList.getById(post.from_id)!=null) {
+                        note.setSourceName(userList.getById(post.from_id).toString());
+                        note.setSourcePhoto_50(userList.getById(post.from_id).photo_50);
+                        note.setSourcePhoto_100(userList.getById(post.from_id).photo_100);
+                    }
+                    if (groupsList.getById(-post.from_id)!=null){
+                        note.setSourceName(groupsList.getById(-post.from_id).name);
+                        note.setSourcePhoto_50(groupsList.getById(-post.from_id).photo_50);
+                        note.setSourcePhoto_100(groupsList.getById(-post.from_id).photo_100);
+                    }
+                    note.setDate(post.date);
                     try {
                         notesDAO.create(note);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    Log.d(LOG_TAG, "row inserted, Text = " + postArray.get(i).text);
+                    Log.d(TAG, "row inserted, Text = " + postArray.get(i).text);
 
-                    if (postArray.get(i).attachments.size()!=0){
+                    if (post.attachments.size()!=0){
                         for (int j = 0; j <postArray.get(i).attachments.size() ; j++) {
                             if (postArray.get(i).attachments.get(j).getType().equals( "photo")){
                                 Photo photo = new Photo();
@@ -131,14 +168,19 @@ public class DataManager  {
 
     public void loadPostsList(int offset, final AsyncRequestListener asyncRequestListener){
         notesLoaded = new ArrayList<Note>();
-        VKRequest request =  new VKRequest("fave.getPosts", VKParameters.from(VKApiConst.COUNT, "10", VKApiConst.OFFSET, String.valueOf(offset)));
+        VKRequest request =  new VKRequest("fave.getPosts", VKParameters.from(VKApiConst.COUNT, "10", VKApiConst.OFFSET, String.valueOf(offset),VKApiConst.EXTENDED,"1"));
         request.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
                 super.onComplete(response);
                 VKPostArray postArray = new VKPostArray();
+                VKList<VKApiUser> userList = new VKList<VKApiUser>();
+                VKList<VKApiCommunity> groupsList = new VKList<VKApiCommunity>();
+
                 try {
                     postArray.parse(response.json);
+                    userList.fill(response.json.getJSONObject("response").getJSONArray("profiles"), VKApiUser.class);
+                    groupsList.fill(response.json.getJSONObject("response").getJSONArray("groups"), VKApiCommunity.class);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -151,14 +193,31 @@ public class DataManager  {
                 }
                 Category cat = listCategory.get(0);
                 for (int i = 0; i <postArray.size() ; i++) {
+
+                    VKApiPost post = postArray.get(i);
+
                     Note note = new Note();
                     note.setText(postArray.get(i).text);
                     note.setCategory(cat);
                     note.setVkID(postArray.get(i).id);
 
+                    note.setFrom_id(post.from_id);
+                    note.setOwner_id(post.to_id);
+                    if (userList.getById(post.from_id)!=null) {
+                        note.setSourceName(userList.getById(post.from_id).toString());
+                        note.setSourcePhoto_50(userList.getById(post.from_id).photo_50);
+                        note.setSourcePhoto_100(userList.getById(post.from_id).photo_100);
+                    }
+                    if (groupsList.getById(-post.from_id)!=null){
+                        note.setSourceName(groupsList.getById(-post.from_id).name);
+                        note.setSourcePhoto_50(groupsList.getById(-post.from_id).photo_50);
+                        note.setSourcePhoto_100(groupsList.getById(-post.from_id).photo_100);
+                    }
+                    note.setDate(post.date);
+
                     try {
                         notesDAO.create(note);
-                        Log.d(LOG_TAG, "row inserted, Text = " + postArray.get(i).text);
+                        Log.d(TAG, "row inserted, Text = " + postArray.get(i).text);
                         if (postArray.get(i).attachments.size()!=0){
                             for (int j = 0; j <postArray.get(i).attachments.size() ; j++)
                                 if (postArray.get(i).attachments.get(j).getType().equals("photo")) {
@@ -226,7 +285,7 @@ public class DataManager  {
             Note note = noteList.get(0);
             note.setCategory(categoryList.get(0));
             notesDAO.update(note);
-            Log.d(LOG_TAG, "update from " + oldCategoryId + " to " + categoryList.get(0).getId() );
+            Log.d(TAG, "update from " + oldCategoryId + " to " + categoryList.get(0).getId() );
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -241,4 +300,22 @@ public class DataManager  {
         }
         return photos;
     }
+
+    public void deleteCategory(int idCategory){
+        try {
+
+            Category categoryAll = categoryDAO.getCategoryById(1);
+            Category category  = categoryDAO.getCategoryById(idCategory);
+            List<Note>  noteList = notesDAO.queryBuilder().where().eq(Note.FIELD_CATEGORY_ID, idCategory).query();
+            for (int i = 0; i <noteList.size() ; i++) {
+                noteList.get(i).setCategory(categoryAll);
+                notesDAO.update(noteList.get(i));
+                Log.d(TAG, "update from " + idCategory + " to all" );
+            }
+            categoryDAO.delete(category);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

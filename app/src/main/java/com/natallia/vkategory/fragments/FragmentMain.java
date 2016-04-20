@@ -1,4 +1,4 @@
-package com.natallia.vkategory;
+package com.natallia.vkategory.fragments;
 
 
 import android.animation.ValueAnimator;
@@ -9,11 +9,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.TypedValue;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.natallia.vkategory.MainActivity;
+import com.natallia.vkategory.R;
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 import com.natallia.vkategory.UI.PostDraggingListener;
 import com.natallia.vkategory.database.DataManager;
@@ -22,8 +25,8 @@ import com.natallia.vkategory.database.DataManager;
  * Created by Natallia on 12.04.2016.
  */
 public class FragmentMain extends Fragment implements CategoryFragmentEventHandler,PostDraggingListener {
-    private static String POST_FRAGMENT_INSTANCE_NAME = "fragmentPost";
-    private static String CATEGORY_FRAGMENT_INSTANCE_NAME = "fragmentCategory";
+    public static String POST_FRAGMENT_INSTANCE_NAME = "fragmentPost";
+    public static String CATEGORY_FRAGMENT_INSTANCE_NAME = "fragmentCategory";
     PostsFragment fragmentPost = null;
     CategoryFragment fragmentCategory = null;
     private FrameLayout.LayoutParams lParams1;
@@ -133,8 +136,15 @@ public class FragmentMain extends Fragment implements CategoryFragmentEventHandl
     }
 
     @Override
+    public void onPostSlideShow(int postID, int position) {
+        ((MainActivity)getActivity()).openSlideShowFragment(postID,position);
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
     }
+
+
 }

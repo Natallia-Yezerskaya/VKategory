@@ -1,4 +1,4 @@
-package com.natallia.vkategory;
+package com.natallia.vkategory.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.natallia.vkategory.R;
 import com.natallia.vkategory.UI.AsyncRequestListener;
 import com.natallia.vkategory.UI.OnLoadMoreListener;
 import com.natallia.vkategory.UI.PostDraggingListener;
@@ -195,5 +196,9 @@ public class PostsFragment extends Fragment {
         if (savedInstanceState != null){
             idCategory = savedInstanceState.getInt("idCategory",0);
         }
+    }
+
+    public void setFocusOnFirstItem(){
+        mRecyclerView.smoothScrollToPosition(0);
     }
 }

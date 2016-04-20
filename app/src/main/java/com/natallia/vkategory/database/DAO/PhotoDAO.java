@@ -3,7 +3,6 @@ package com.natallia.vkategory.database.DAO;
 import com.j256.ormlite.dao.BaseDaoImpl;
 import com.j256.ormlite.support.ConnectionSource;
 import com.natallia.vkategory.models.Photo;
-import com.natallia.vkategory.models.Post;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -15,7 +14,7 @@ public class PhotoDAO extends BaseDaoImpl<Photo, Integer>{
         super(connectionSource, dataClass);
     }
 
-    public List<Photo> getAllPosts() throws SQLException{
+    public List<Photo> getAllPhotos() throws SQLException{
         return this.queryForAll();
     }
 }

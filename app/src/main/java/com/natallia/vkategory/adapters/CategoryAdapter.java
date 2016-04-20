@@ -3,20 +3,26 @@ package com.natallia.vkategory.adapters;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.graphics.PorterDuff;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.natallia.vkategory.CategoryActivity;
 import com.natallia.vkategory.R;
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 import com.natallia.vkategory.UI.MyColor;
 import com.natallia.vkategory.UI.PostDraggingListener;
+import com.natallia.vkategory.database.DataManager;
 import com.natallia.vkategory.models.Category;
 
 import java.util.List;
@@ -81,23 +87,26 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             holder.frameLayout.setBackgroundResource(R.drawable.rectangle_rounded);
         }
 
-        holder.frameLayout.getBackground().setColorFilter(MyColor.myColors.get(position).getColor(), PorterDuff.Mode.MULTIPLY);
+
+        activity.registerForContextMenu(holder.frameLayout);
+
+        holder.frameLayout.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
+                showPopupMenu(v,holder.getAdapterPosition());
+                return true;
+            }
+        });
+
+        holder.frameLayout.getBackground().setColorFilter(MyColor.myColors.get(position%(MyColor.myColors.size())).getColor(), PorterDuff.Mode.MULTIPLY);
         holder.frameLayout.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-
-                // TODO переписать через интерфейс по книжке!!!
-
-
                 mCategoryFragmentEventHandler.refreshPost(categories.get(holder.getAdapterPosition()).getId());
-                //((MainActivity) activity).refreshPostsFragment(categories.get(holder.getAdapterPosition()).getId());
-
-
                 notifyItemChanged(idSelectedCategory);
                 idSelectedCategory = holder.getAdapterPosition();
-
-
 
                 holder.frameLayout.setBackgroundResource(R.drawable.rectangle_rounded_accent);
                 holder.frameLayout.getBackground().setColorFilter(MyColor.myColors.get(holder.getAdapterPosition()).getColor(), PorterDuff.Mode.MULTIPLY);
@@ -120,17 +129,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         });
 
         valueAnimator.setDuration(300);
-
-//        final ValueAnimator valueAnimator = ValueAnimator.ofArgb(R.color.colortemp1, R.color.colortemp2);
-//        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                holder.frameLayout.setCardElevation((Float) animation.getAnimatedValue());
-//                Log.d("motion_loc", holder.categoryName.getText().toString());
-//            }
-//        });
-//
-//        valueAnimator.setDuration(100);
 
 
         holder.frameLayout.setOnDragListener(new View.OnDragListener() {
@@ -202,6 +200,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         categories.add(category);
     }
 
+    public void deleteCategory(int position){
+        categories.remove( position );
+    }
+
     public void categoryForChoosing(boolean forChoose){
         forChoosing = forChoose;
         notifyDataSetChanged();
@@ -222,9 +224,74 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             super(itemView);
             categoryName = (TextView) itemView.findViewById(R.id.tvCategory);
             frameLayout = (FrameLayout)itemView.findViewById(R.id.layoutCategory);
-            //frameLayout.setMaxCardElevation(30f);
-            }
         }
-
     }
+
+
+
+    private void showPopupMenu(View v, final int position) {
+        PopupMenu popupMenu = new PopupMenu(activity, v);
+        popupMenu.inflate(R.menu.popup_menu);
+        popupMenu
+                .setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.menu1:
+                                Toast.makeText(activity.getApplicationContext(),
+                                        "Вы выбрали PopupMenu 1",
+                                        Toast.LENGTH_SHORT).show();
+
+                                final CategoryActivity.DeleteCategoryDialog myDialogFragment = new CategoryActivity.DeleteCategoryDialog();
+                                myDialogFragment.show(activity.getFragmentManager(), "DeleteCategoryDialog");
+                                myDialogFragment.mListener = new CategoryActivity.DeleteCategoryDialog.DeleteCategoryDialogListener() {
+                                    @Override
+                                    public void onDialogPositiveClick(DialogFragment dialog) {
+                                        Log.d(TAG, "deleteCategory: size" +categories.size());
+                                        DataManager.getInstance().deleteCategory(categories.get(position).getId());
+                                        deleteCategory(position);
+                                        notifyItemRemoved(position);
+                                        idSelectedCategory = 0;
+                                        notifyItemChanged(idSelectedCategory);
+                                        mCategoryFragmentEventHandler.refreshPost(categories.get(idSelectedCategory).getId());
+                                        Log.d(TAG, "deleteCategory: size" + categories.size());
+                                    }
+                                };
+
+                                return true;
+                            case R.id.menu2:
+                                Toast.makeText(activity.getApplicationContext(),
+                                        "Вы выбрали PopupMenu 2",
+                                        Toast.LENGTH_SHORT).show();
+
+                                CategoryActivity.RenameCategoryDialog myDialog = new CategoryActivity.RenameCategoryDialog();
+                                myDialog.setOldName(categories.get(position).getName().toString());
+                                myDialog.show(activity.getFragmentManager(), "DeleteCategoryDialog");
+                                myDialog.mListener = new CategoryActivity.RenameCategoryDialog.RenameCategoryDialogListener() {
+                                    @Override
+                                    public void onDialogPositiveClick(DialogFragment dialog, String text) {
+                                        DataManager.getInstance().renameCategory(categories.get(position),text);
+                                        notifyItemChanged(position);
+                                    }
+                                };
+
+                                return true;
+                            default:
+                                return false;
+                        }
+                    }
+                });
+
+        popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+
+            @Override
+            public void onDismiss(PopupMenu menu) {
+                Toast.makeText(activity.getApplicationContext(), "onDismiss",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        popupMenu.show();
+    }
+}
 

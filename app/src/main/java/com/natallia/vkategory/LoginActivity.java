@@ -3,7 +3,6 @@ package com.natallia.vkategory;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +12,7 @@ import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
 import com.vk.sdk.api.VKError;
-import com.vk.sdk.util.VKUtil;
 
-/**
- * Created by Natallia on 21.03.2016.
- */
 public class LoginActivity extends FragmentActivity {
 
     private boolean isResumed = false;
@@ -40,8 +35,9 @@ public class LoginActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first);
-        String[] fingerprints = VKUtil.getCertificateFingerprint(this, this.getPackageName());
-        Log.d("MYTAG",fingerprints.toString());
+
+        //String[] fingerprints = VKUtil.getCertificateFingerprint(this, this.getPackageName());
+        //Log.d("MYTAG",fingerprints.toString());
         VKSdk.wakeUpSession(this, new VKCallback<VKSdk.LoginState>() {
             @Override
             public void onResult(VKSdk.LoginState res) {
@@ -51,7 +47,8 @@ public class LoginActivity extends FragmentActivity {
                             showLogin();
                             break;
                         case LoggedIn:
-                            showLogout();
+                            startMainActivity();
+                            //showLogout();
                             break;
                         case Pending:
                             break;
@@ -67,19 +64,16 @@ public class LoginActivity extends FragmentActivity {
             }
 
         });
-
-//        String[] fingerprint = VKUtil.getCertificateFingerprint(this, this.getPackageName());
-//        Log.d("Fingerprint", fingerprint[0]);
     }
 
-    private void showLogout() {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.container, new LogoutFragment())
-                .commitAllowingStateLoss();
-    }
+//    private void showLogout() {
+//        getSupportFragmentManager()
+//                .beginTransaction()
+//                .replace(R.id.container, new LogoutFragment())
+//                .commitAllowingStateLoss();
+//    }
 
-    private void showLogin() {
+    public void showLogin() {
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.container, new LoginFragment())
@@ -91,7 +85,7 @@ public class LoginActivity extends FragmentActivity {
         super.onResume();
         isResumed = true;
         if (VKSdk.isLoggedIn()) {
-            showLogout();
+            //showLogout();
         } else {
             showLogin();
         }
@@ -113,8 +107,6 @@ public class LoginActivity extends FragmentActivity {
         VKCallback<VKAccessToken> callback = new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
-                // User passed Authorization
-               // startTestActivity();
                 startMainActivity();
             }
 
@@ -129,9 +121,6 @@ public class LoginActivity extends FragmentActivity {
         }
     }
 
-    private void startTestActivity() {//TODO потом убрать
-        startActivity(new Intent(this, TestActivity.class));
-    }
 
     private void startMainActivity() {
         startActivity(new Intent(this, MainActivity.class));
@@ -157,32 +146,32 @@ public class LoginActivity extends FragmentActivity {
 
     }
 
-    public static class LogoutFragment extends android.support.v4.app.Fragment {
-        public LogoutFragment() {
-            super();
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View v = inflater.inflate(R.layout.fragment_logout, container, false);
-            v.findViewById(R.id.continue_button).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //((LoginActivity) getActivity()).startTestActivity();
-                    ((LoginActivity) getActivity()).startMainActivity();
-                }
-            });
-
-            v.findViewById(R.id.logout).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    VKSdk.logout();
-                    if (!VKSdk.isLoggedIn()) {
-                        ((LoginActivity) getActivity()).showLogin();
-                    }
-                }
-            });
-            return v;
-        }
-    }
+//    public static class LogoutFragment extends android.support.v4.app.Fragment {
+//        public LogoutFragment() {
+//            super();
+//        }
+//
+//        @Override
+//        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+//            View v = inflater.inflate(R.layout.fragment_logout, container, false);
+//            v.findViewById(R.id.continue_button).setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    ((LoginActivity) getActivity()).startMainActivity();
+//                }
+//            });
+//
+//            v.findViewById(R.id.logout).setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    VKSdk.logout();
+//                    if (!VKSdk.isLoggedIn()) {
+//                        ((LoginActivity) getActivity()).showLogin();
+//
+//                    }
+//                }
+//            });
+//            return v;
+//        }
+//    }
 }

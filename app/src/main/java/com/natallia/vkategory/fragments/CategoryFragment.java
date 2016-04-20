@@ -1,4 +1,4 @@
-package com.natallia.vkategory;
+package com.natallia.vkategory.fragments;
 
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,9 +16,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
 
+import com.natallia.vkategory.CategoryActivity;
+import com.natallia.vkategory.R;
 import com.natallia.vkategory.UI.CategoryFragmentEventHandler;
 
 import com.natallia.vkategory.UI.PostDraggingListener;
