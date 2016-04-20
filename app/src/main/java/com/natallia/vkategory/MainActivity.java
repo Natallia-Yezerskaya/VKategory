@@ -8,9 +8,11 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -23,7 +25,11 @@ import com.natallia.vkategory.fragments.FragmentDetail;
 import com.natallia.vkategory.fragments.FragmentMain;
 import com.natallia.vkategory.fragments.FragmentSlideShow;
 import com.natallia.vkategory.fragments.PostsFragment;
+import com.vk.sdk.VKAccessToken;
+import com.vk.sdk.VKCallback;
+import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
+import com.vk.sdk.api.VKError;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,PostDraggingListener {
@@ -42,14 +48,64 @@ public class MainActivity extends AppCompatActivity
 
     public FragmentMain fragmentMain;
 
+    private boolean isResumed = false;
 
-     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    private Bundle mySavedInstanceState;
+
+
+    private static final String[] sMyScope = new String[]{
+            VKScope.FRIENDS,
+            VKScope.WALL,
+            VKScope.PHOTOS,
+            VKScope.NOHTTPS,
+            VKScope.MESSAGES,
+            VKScope.DOCS
+    };
+
+
+
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
          
-         final FragmentManager fm = getSupportFragmentManager();
+
          
         setContentView(R.layout.activity_main);
+
+
+        dbHelper = new DBHelper(this);
+
+        MyColor.initialize(this);
+
+         VKSdk.wakeUpSession(this, new VKCallback<VKSdk.LoginState>() {
+             @Override
+             public void onResult(VKSdk.LoginState res) {
+                 if (isResumed) {
+                     switch (res) {
+                         case LoggedOut:
+                             showLogin();
+                             break;
+                         case LoggedIn:
+                             startMainActivity();
+                             break;
+                         case Pending:
+                             break;
+                         case Unknown:
+                             break;
+                     }
+                 }
+             }
+
+             @Override
+             public void onError(VKError error) {
+
+             }
+
+         });
+
+
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //         toolbar.setOnClickListener(new View.OnClickListener() {
 //             @Override
@@ -64,24 +120,12 @@ public class MainActivity extends AppCompatActivity
 //             }
 //         });
 
-         dbHelper = new DBHelper(this);
-         dataManager = new DataManager(this,dbHelper);
-         MyColor.initialize(this);
+
 
 
          
 
-         if (savedInstanceState==null) {
-             fragmentMain = (FragmentMain) fm.findFragmentByTag(MAIN_FRAGMENT_INSTANCE_NAME);
-             if (fragmentMain == null) {
-                 fragmentMain = FragmentMain.createFragment();
-                 getSupportFragmentManager()
-                         .beginTransaction()
-                         .replace(R.id.container_main, fragmentMain, MAIN_FRAGMENT_INSTANCE_NAME)
-                                 //.addToBackStack(null)
-                         .commit();
-             }
-         }
+
 
 
          //setSupportActionBar(toolbar);
@@ -106,6 +150,29 @@ public class MainActivity extends AppCompatActivity
         */
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isResumed = true;
+        if (VKSdk.isLoggedIn()) {
+            startMainActivity();
+        } else {
+            showLogin();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isResumed = false;
+    }
+
+    public void showLogin() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container_main, new LoginFragment())
+                .commitAllowingStateLoss();
+    }
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -135,9 +202,7 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(getApplicationContext(),
                         "You selected Logout", Toast.LENGTH_LONG).show();
                         VKSdk.logout();
-                        startActivity(new Intent(this,LoginActivity.class));
-                       // if (!VKSdk.isLoggedIn()) {((LoginActivity) getActivity()).showLogin();}
-
+                        showLogin();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -168,7 +233,21 @@ public class MainActivity extends AppCompatActivity
 
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        VKCallback<VKAccessToken> callback = new VKCallback<VKAccessToken>() {
+            @Override
+            public void onResult(VKAccessToken res) {
+                startMainActivity();
+            }
+
+            @Override
+            public void onError(VKError error) {
+                // User didn't pass Authorization
+            }
+        };
+
+        if (!VKSdk.onActivityResult(requestCode, resultCode, data, callback)) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
 
@@ -222,4 +301,45 @@ public class MainActivity extends AppCompatActivity
     public void onPostSlideShow(int postID, int position) {
         openSlideShowFragment(postID,position);
     }
+
+
+    public static class LoginFragment extends android.support.v4.app.Fragment {
+        public LoginFragment() {
+            super();
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            View v = inflater.inflate(R.layout.fragment_login, container, false);
+            v.findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    VKSdk.login(getActivity(), sMyScope);
+                }
+            });
+            return v;
+        }
+
+    }
+
+
+    private void startMainActivity() {
+
+
+
+        final FragmentManager fm = getSupportFragmentManager();
+        if (mySavedInstanceState==null) {
+            fragmentMain = (FragmentMain) fm.findFragmentByTag(MAIN_FRAGMENT_INSTANCE_NAME);
+            if (fragmentMain == null) {
+                fragmentMain = FragmentMain.createFragment();
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.container_main, fragmentMain, MAIN_FRAGMENT_INSTANCE_NAME)
+                                //.addToBackStack(null)
+                        .commit();
+            }
+        }
+    }
+
+
 }

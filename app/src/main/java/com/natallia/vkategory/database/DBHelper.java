@@ -25,9 +25,13 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
     private CategoryDAO categoryDao = null;
     private NotesDAO noteDao = null;
     private PhotoDAO photoDao = null;
+    private DataManager dataManager;
+
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        dataManager = new DataManager(this);
+
     }
 
     @Override
@@ -38,7 +42,7 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
             TableUtils.createTable(connectionSource, Photo.class);
             TableUtils.createTable(connectionSource, Note.class);
 
-            DataManager.getInstance().createPostsList();
+
         } catch (SQLException e) {
             Log.e(DBHelper.class.getName(), "Can't create database", e);
             throw new RuntimeException(e);
@@ -49,6 +53,8 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
             // create some entries in the onCreate
             Category category = new Category("All");
             dao.create(category);
+
+            DataManager.getInstance().createPostsList();
         } catch (SQLException e) {
             e.printStackTrace();
         }

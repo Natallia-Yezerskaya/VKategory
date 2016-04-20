@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class DataManager  {
-    public Activity activity;
+    //public Activity activity;
     private static DataManager instance;
     public static String TAG = "myTags";
     List<Note> notesLoaded;
@@ -46,8 +46,8 @@ public class DataManager  {
         return instance;
     }
 
-    public DataManager(Activity activity, DBHelper dbHelper) {
-        this.activity = activity;
+    public DataManager(DBHelper dbHelper) {
+        //this.activity = activity;
         instance = this;
         db = dbHelper.getWritableDatabase();
         try {
@@ -95,31 +95,21 @@ public class DataManager  {
 
 
     public void createPostsList(){
-        VKRequest request =  new VKRequest("fave.getPosts", VKParameters.from(VKApiConst.COUNT,"10",VKApiConst.EXTENDED,"1"));
-        request.executeWithListener(new VKRequest.VKRequestListener() {
-            @Override
-            public void onComplete(VKResponse response) {
-                super.onComplete(response);
-                VKPostArray postArray = new VKPostArray();
-                VKList<VKApiUser> userList = new VKList<VKApiUser>();
-                VKList<VKApiCommunity> groupsList = new VKList<VKApiCommunity>();
 
-                try {
-                    userList.fill(response.json.getJSONObject("response").getJSONArray("profiles"), VKApiUser.class);
-                    groupsList.fill(response.json.getJSONObject("response").getJSONArray("groups"), VKApiCommunity.class);
-                    postArray.parse(response.json);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+        AsyncLoader loader = new AsyncLoader();
+
+        loader.setListener(new AsyncLoader.AsyncLoaderListener() {
+            @Override
+            public void onAllLoaded(VKPostArray postArray, VKList<VKApiUser> userList, VKList<VKApiCommunity> groupsList) {
 
                 Category cat = null;
                 try {
-                   cat = categoryDAO.getCategoryById(1);
+                    cat = categoryDAO.getCategoryById(1);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
 
-                for (int i = 0; i <postArray.size() ; i++) {
+                for (int i = postArray.size() - 1; i > 0; i++) {
                     VKApiPost post = postArray.get(i);
 
                     Note note = new Note();
@@ -128,12 +118,12 @@ public class DataManager  {
                     note.setVkID(post.id);
                     note.setFrom_id(post.from_id);
                     note.setOwner_id(post.to_id);
-                    if (userList.getById(post.from_id)!=null) {
+                    if (userList.getById(post.from_id) != null) {
                         note.setSourceName(userList.getById(post.from_id).toString());
                         note.setSourcePhoto_50(userList.getById(post.from_id).photo_50);
                         note.setSourcePhoto_100(userList.getById(post.from_id).photo_100);
                     }
-                    if (groupsList.getById(-post.from_id)!=null){
+                    if (groupsList.getById(-post.from_id) != null) {
                         note.setSourceName(groupsList.getById(-post.from_id).name);
                         note.setSourcePhoto_50(groupsList.getById(-post.from_id).photo_50);
                         note.setSourcePhoto_100(groupsList.getById(-post.from_id).photo_100);
@@ -146,9 +136,9 @@ public class DataManager  {
                     }
                     Log.d(TAG, "row inserted, Text = " + postArray.get(i).text);
 
-                    if (post.attachments.size()!=0){
-                        for (int j = 0; j <postArray.get(i).attachments.size() ; j++) {
-                            if (postArray.get(i).attachments.get(j).getType().equals( "photo")){
+                    if (post.attachments.size() != 0) {
+                        for (int j = 0; j < postArray.get(i).attachments.size(); j++) {
+                            if (postArray.get(i).attachments.get(j).getType().equals("photo")) {
                                 Photo photo = new Photo();
                                 photo.setVkURL_130(((VKApiPhoto) postArray.get(i).attachments.get(j)).photo_130.toString());
                                 photo.setVkURL_640(((VKApiPhoto) postArray.get(i).attachments.get(j)).photo_604.toString());
@@ -164,6 +154,9 @@ public class DataManager  {
                 }
             }
         });
+
+        loader.fetchPosts(0);
+
     }
 
     public void loadPostsList(int offset, final AsyncRequestListener asyncRequestListener){
@@ -303,7 +296,6 @@ public class DataManager  {
 
     public void deleteCategory(int idCategory){
         try {
-
             Category categoryAll = categoryDAO.getCategoryById(1);
             Category category  = categoryDAO.getCategoryById(idCategory);
             List<Note>  noteList = notesDAO.queryBuilder().where().eq(Note.FIELD_CATEGORY_ID, idCategory).query();
@@ -318,4 +310,52 @@ public class DataManager  {
         }
     }
 
+    public static class AsyncLoader {
+        private int MAX_RECORDS = 1000;
+        private int PACKAGE_SIZE = 50;
+
+        public interface AsyncLoaderListener {
+            void onAllLoaded(VKPostArray globalPostArray, VKList<VKApiUser> globalUserList,VKList<VKApiCommunity> globalGroupsList);
+        }
+        VKPostArray globalPostArray = new VKPostArray();
+        VKList<VKApiUser> globalUserList = new VKList<VKApiUser>();
+        VKList<VKApiCommunity> globalGroupsList = new VKList<VKApiCommunity>();
+        private AsyncLoaderListener listener;
+
+
+        public void setListener(AsyncLoaderListener listener) {
+            this.listener = listener;
+        }
+
+        private void fetchPosts(int offset) {
+            VKRequest request = new VKRequest("fave.getPosts", VKParameters.from(VKApiConst.COUNT, String.valueOf(PACKAGE_SIZE), VKApiConst.OFFSET, String.valueOf(offset), VKApiConst.EXTENDED, "1"));
+            request.executeWithListener(new VKRequest.VKRequestListener() {
+                @Override
+                public void onComplete(VKResponse response) {
+                    super.onComplete(response);
+                    VKPostArray postArray = new VKPostArray();
+                    VKList<VKApiUser> userList = new VKList<VKApiUser>();
+                    VKList<VKApiCommunity> groupsList = new VKList<VKApiCommunity>();
+                    try {
+                        userList.fill(response.json.getJSONObject("response").getJSONArray("profiles"), VKApiUser.class);
+                        groupsList.fill(response.json.getJSONObject("response").getJSONArray("groups"), VKApiCommunity.class);
+                        postArray.parse(response.json);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    globalPostArray.addAll(postArray);
+                    globalGroupsList.addAll(groupsList);
+                    globalUserList.addAll(userList);
+                }
+
+            });
+
+            offset+=PACKAGE_SIZE;
+            if (offset<MAX_RECORDS){
+                fetchPosts(offset);
+            } else {
+                listener.onAllLoaded(globalPostArray,globalUserList,globalGroupsList);
+            }
+        }
+    }
 }
